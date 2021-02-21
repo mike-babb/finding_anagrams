@@ -1,0 +1,53 @@
+# Don't track content of these folders
+############################################
+.ipynb_checkpoints
+__pycache__
+.idea
+.vscode
+.DS_Store
+.DS_Store
+.Rhistory
+.rhistory
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Temporary Output from Linear Programming #
+############################################
+*.lp
+*.mps
+
+# Temporary Files #
+###################
+scratch.py
+scratch.ipynb
+itch.py
+itch.ipynb
+*.log
+Untitled*.ipynb
+untitled*.ipynb
+
+# machine specific configuation files
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
