@@ -94,7 +94,7 @@ def execute_sql_statement(sql, db_path, db_name):
 if __name__ == '__main__':
     # simple test, query the first 10 words
     sql = 'select * from words limit 10;'
-    db_path = '/project/anagrams/db'
+    db_path = '/project/finding_anagrams/db'
     db_name = 'words.db'
     df = query_db(sql = sql, db_path = db_path, db_name = db_name)
     print(df.head())
