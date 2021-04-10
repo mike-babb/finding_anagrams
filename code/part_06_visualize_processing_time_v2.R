@@ -32,11 +32,13 @@ if(!dir.exists(output_path)){
 sqlite <- RSQLite::dbDriver('SQLite')
 db_conn <- RSQLite::dbConnect(drv=sqlite, dbname=db_path_name,  flags = RSQLite::SQLITE_RO)
 
+keep_col_names <- c('word', 'lcase', 'n_chars', 'first_letter', 'word_id', 'word_group_id', 'n_seconds', 'matrix_extraction_option', 'word_processed')
+rename_col_names <- c(keep_col_names, 'n_from_words', 'n_to_words', 'n_candidates')
 
 # use a simple loop to load data from the SQLite tables
 base_sql <- 'select * from table_name;'
 df_list <- list()
-for(tn in seq(1, 4)){
+for(tn in seq(1, 5)){
   table_name <- paste0('words_me_', stri_pad(str=tn, width = 2, pad = '0'))
   
   sql <- stri_replace_all_fixed(str = base_sql, pattern = 'table_name', replacement = table_name)
@@ -44,14 +46,49 @@ for(tn in seq(1, 4)){
 
   # send a query to a database, return the result as a dataframe  
   df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
- 
+  
+  df <- data.table(df)
+  
+  df[, matrix_extraction_option := as.integer(tn)]
+  
+  if(tn == 5){
+    add_col_names <- c('n_from_word_groups', 'n_to_word_groups', 'n_candidates')
+  }else{
+    df[, word_processed := as.integer(1)]
+    add_col_names <- c('n_from_words', 'n_to_words', 'n_candidates')
+  }
+    
+  curr_keep_col_names <- c(keep_col_names, add_col_names)
+  
+  
+  df <- df[, ..curr_keep_col_names]
+  
+  colnames(df) <- rename_col_names
+  
+  # 
+  
   df_list[[tn]] <- df
 }
+
 # disconnect
 RSQLite::dbDisconnect(conn=db_conn)
 
 # create a datatable
 df <- rbindlist(l= df_list)
+
+
+####
+# EXTRACT ONLY THE WORDS THAT WERE CHECKED FOR MATRIX TYPE 5 - 215k VERSUS 230
+####
+
+df05 <- df[matrix_extraction_option == 5 & word_processed == 1, ]
+
+
+df05$n_seconds %>% sum()
+
+df[, word_processed := 0]
+df[word_id %in% df05$word_id, word_processed := 1]
+
 
 ####
 # PART 2: SHAPE DATA TO PLOT TOTAL PROCESSING TIME BY LETTER
@@ -61,8 +98,9 @@ my_factor_levels <- df$matrix_extraction_option %>% unique() %>% sort(decreasing
 my_factor_labels <- stri_pad(str=my_factor_levels, width = 2, pad = '0')
 df[, me_factor := factor(x=matrix_extraction_option, levels = my_factor_levels, labels = my_factor_labels)]
 
+
 # aggregate to get total processing time by letter and other summary stats
-df_agg <- df[, .(word_count = .N,
+df_agg <- df[word_processed == 1, .(word_count = .N,
                  tot_proc_time = sum(n_seconds),
                  mean_proc_time = mean(n_seconds),
                  med_proc_time = median(n_seconds),
