@@ -12,6 +12,8 @@ library(ggplot2)
 library(magrittr)
 library(RSQLite)
 library(stringi)
+library(RColorBrewer)
+
 
 # input db path and name
 db_path <- '/project/finding_anagrams/db'
@@ -32,11 +34,13 @@ if(!dir.exists(output_path)){
 sqlite <- RSQLite::dbDriver('SQLite')
 db_conn <- RSQLite::dbConnect(drv=sqlite, dbname=db_path_name,  flags = RSQLite::SQLITE_RO)
 
+keep_col_names <- c('word', 'lcase', 'n_chars', 'first_letter', 'word_id', 'word_group_id', 'n_seconds', 'matrix_extraction_option', 'word_processed')
+rename_col_names <- c(keep_col_names, 'n_from_words', 'n_to_words', 'n_candidates')
 
 # use a simple loop to load data from the SQLite tables
 base_sql <- 'select * from table_name;'
 df_list <- list()
-for(tn in seq(1, 4)){
+for(tn in seq(1, 5)){
   table_name <- paste0('words_me_', stri_pad(str=tn, width = 2, pad = '0'))
   
   sql <- stri_replace_all_fixed(str = base_sql, pattern = 'table_name', replacement = table_name)
@@ -44,14 +48,49 @@ for(tn in seq(1, 4)){
 
   # send a query to a database, return the result as a dataframe  
   df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
- 
+  
+  df <- data.table(df)
+  
+  df[, matrix_extraction_option := as.integer(tn)]
+  
+  if(tn == 5){
+    add_col_names <- c('n_from_word_groups', 'n_to_word_groups', 'n_candidates')
+  }else{
+    df[, word_processed := as.integer(1)]
+    add_col_names <- c('n_from_words', 'n_to_words', 'n_candidates')
+  }
+    
+  curr_keep_col_names <- c(keep_col_names, add_col_names)
+  
+  
+  df <- df[, ..curr_keep_col_names]
+  
+  colnames(df) <- rename_col_names
+  
+  # 
+  
   df_list[[tn]] <- df
 }
+
 # disconnect
 RSQLite::dbDisconnect(conn=db_conn)
 
 # create a datatable
 df <- rbindlist(l= df_list)
+
+
+####
+# EXTRACT ONLY THE WORDS THAT WERE CHECKED FOR MATRIX TYPE 5 - 215k VERSUS 230
+####
+
+df05 <- df[matrix_extraction_option == 5 & word_processed == 1, ]
+
+
+df05$n_seconds %>% sum()
+
+df[, word_processed := 0]
+df[word_id %in% df05$word_id, word_processed := 1]
+
 
 ####
 # PART 2: SHAPE DATA TO PLOT TOTAL PROCESSING TIME BY LETTER
@@ -61,8 +100,9 @@ my_factor_levels <- df$matrix_extraction_option %>% unique() %>% sort(decreasing
 my_factor_labels <- stri_pad(str=my_factor_levels, width = 2, pad = '0')
 df[, me_factor := factor(x=matrix_extraction_option, levels = my_factor_levels, labels = my_factor_labels)]
 
+
 # aggregate to get total processing time by letter and other summary stats
-df_agg <- df[, .(word_count = .N,
+df_agg <- df[word_processed == 1, .(word_count = .N,
                  tot_proc_time = sum(n_seconds),
                  mean_proc_time = mean(n_seconds),
                  med_proc_time = median(n_seconds),
@@ -87,6 +127,14 @@ tt_df %>% head()
 ####
 # PART 3: POINT AND LINE PLOT OF TOTAL TIME PER LETTER BY TECHNIQUE
 ####
+
+# select colors. This needs to be consistent across graphs version 1 and 2
+my_colors <- RColorBrewer::brewer.pal(n=5, name = 'Dark2')
+
+#base::rev(RColorBrewer::brewer.pal(n=5, name = 'Dark2'))[2:5]
+#base::rev(RColorBrewer::brewer.pal(n=5, name = 'Dark2'))
+
+
 # set breaks and format the y-axis
 df_agg$tot_proc_time_minutes %>% summary()
 
@@ -106,7 +154,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color =
   geom_line(size = 1.5) + 
   geom_point(size = 2) +
   ggtitle(label = 'Total Time To Find Anagrams By Word Length And Processing Technique') +
-  scale_color_brewer(type='qual',palette = 'Dark2', labels = tt_df$nice_label_format) + 
+  scale_color_manual(values = my_colors, labels = tt_df$nice_label_format) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(df_agg$n_chars)),
                    labels = factor((seq(1,max(df_agg$n_chars)))),
@@ -118,10 +166,9 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color =
   guides(color = guide_legend(title = 'Processing\nTechnique\n(total time)')) +
   theme_bw()
 # check plot
-plot(my_plot)
 
 # save plot to disk
-file_name <- 'tot_proc_time_by_word_length.png'
+file_name <- 'tot_proc_time_by_word_length_v2.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -144,7 +191,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_fac
   geom_point(size=1.5) + 
   geom_line(size=2) +
   ggtitle(label = 'Average Time To Find Anagrams By Word Length And Processing Technique') +
-  scale_color_brewer(type='qual', palette = 'Dark2') + 
+  scale_color_manual(values = my_colors) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(df_agg$n_chars)),
                    labels = factor((seq(1,max(df_agg$n_chars)))),
@@ -156,7 +203,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_fac
   guides(color = guide_legend(title = 'Processing\nTechnique')) +
   theme_bw()
 
-file_name <- 'avg_proc_time_by_word_length.png'
+file_name <- 'avg_proc_time_by_word_length_v2.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -177,7 +224,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_comp_words, color = me_fa
   geom_point(size=1.5) + 
   geom_line(size=2) +
   ggtitle(label = 'Average Number of Candidate Words By Word Length And Processing Technique') +
-  scale_color_brewer(type='qual', palette = 'Dark2') + 
+  scale_color_manual(values = my_colors) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(df_agg$n_chars)),
                    labels = factor((seq(1,max(df_agg$n_chars)))),
@@ -188,7 +235,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_comp_words, color = me_fa
                      limits = y_limits) +
   guides(color = guide_legend(title = 'Processing\nTechnique')) +
   theme_bw()
-file_name <- 'avg_search_candidates_by_word_length.png'
+file_name <- 'avg_search_candidates_by_word_length_v2.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -199,12 +246,12 @@ dev.off()
 # PART 6: POINT AND LINE PLOT OF THE AVERAGE NUMBER OF FROM/TO WORDS BY WORD LENGTH, FACETED
 ####
 
+# create a datatable
+
 # aggregate to get averages
 df_agg <- df[matrix_extraction_option == 4, .(mean_from_words = mean(n_from_words),
-                 mean_to_words = mean(n_to_words),
-                 mean_slt_to_words = mean(n_slt_words),
-                 mean_dlt_to_words = mean(n_dlt_words)
-                 ), by = .(n_chars)]
+                 mean_to_words = mean(n_to_words)),
+             by = .(n_chars)]
 df_agg %>% tail()
 
 # melt, then create groups
@@ -215,8 +262,8 @@ df_melt %>% head()
 # make factors
 my_factor_levels <- df_melt$word_stat %>% unique() %>% sort()
 # manually specify factor label ordering
-my_factor_levels <- c("mean_from_words","mean_to_words","mean_dlt_to_words","mean_slt_to_words")
-my_factor_labels <- c('Avg. From Words', 'Avg. To Words', 'Avg. Diff Length To Words', 'Avg. Same Length To Words')
+my_factor_levels <- c("mean_from_words","mean_to_words")
+my_factor_labels <- c('Avg. From Words', 'Avg. To Words')
 
 df_melt[, word_stat_factor := factor(x=word_stat, levels = my_factor_levels, labels = my_factor_labels)]
 
@@ -242,7 +289,7 @@ my_plot <- ggplot(data=df_melt, aes(x=n_chars, y = value)) +
   theme_bw() +
   facet_grid(rows = vars(word_stat_factor), scales = 'free')
   
-file_name <- 'avg_from_to_words_by_word_length.png'
+file_name <- 'avg_from_to_words_by_word_length_v2.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -251,4 +298,5 @@ dev.off()
 
 
 df_summary <- df[, as.list(summary(n_candidates)), by = matrix_extraction_option]
+
 
