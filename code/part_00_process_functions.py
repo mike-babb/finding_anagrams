@@ -16,34 +16,23 @@ import pandas as pd
 # custom
 from part_00_file_db_utils import build_db_conn
 
-
 def get_values(wg_id:int, 
-               n_char_matrix_dict:dict,
-               wg_id_n_char_matrix_dict:dict):
-    """ FIND ANAGRAMS FOR A SPECIFIC USING word_id AND MATRIX COMPARISONS    
+               wchar_matrix:np.ndarray,
+              word_group_id_list:np.ndarray):
+    """ FIND ANAGRAMS FOR A SPECIFIC USING word_group_id AND MATRIX COMPARISONS    
+    This is the simplest technique
     """ 
+
+    outcome = wchar_matrix - wchar_matrix[wg_id, ]
     
-    # A USEFUL WAY TO PROTOTYPE, TIME, AND DETERMINE THE
-    # CORRECTNESS OF PROGRAM OPERATION AND OUTPUT
-
-    # get information data based on word id
-        
-    key_hash = wg_id_n_char_matrix_dict[wg_id]
-        
-    cw_id_list, curr_char_matrix = n_char_matrix_dict[key_hash]
-    # subtract the curr_test_vector from every row in the matrix
-    # this produces a new matrix.        
-    new_word_id = cw_id_list==wg_id        
-    outcome = curr_char_matrix - curr_char_matrix[new_word_id, ]
-
     # compute the score by finding where rows, across all columns, are GTE 0
     outcome_indices = np.all(outcome >= 0, axis = 1)
     outcome = None        
-
-    # extract anagrams based on index values
-    outcome_word_id_list = cw_id_list[outcome_indices]    
     
-    output_list = np.zeros(shape = (len(outcome_word_id_list), 2),  dtype=np.int32)
+    # extract anagrams based on index values
+    outcome_word_id_list = word_group_id_list[outcome_indices]    
+    
+    output_list = np.zeros(shape = (outcome_word_id_list.shape[0], 2),  dtype=int)
     
     # update the output list with the word_id_list - these are from/parent words    
     output_list[:, 0] = outcome_word_id_list
@@ -54,8 +43,68 @@ def get_values(wg_id:int,
     return output_list
 
 
-def estimate_total_pairs(word_df:pd.DataFrame, wg_df:pd.DataFrame,
-                         n_char_matrix_dict:dict, wg_id_n_char_matrix_dict:dict):
+def get_values_better(wg_id:int,
+                      letter_selector:str,
+                      letter_selector_matrix_dict:dict):
+
+    # this is the submatrix by letter selector
+    ls_wg_id_list, ls_wchar_matrix, ls_wg_id_set = letter_selector_matrix_dict[letter_selector]
+
+    new_word_id = ls_wg_id_list==wg_id    
+    
+    # now, perform the comparison    
+    outcome = ls_wchar_matrix - ls_wchar_matrix[new_word_id, ]
+
+    # compute the score by finding where rows, across all columns, are GTE 0
+    outcome_indices = np.all(outcome >= 0, axis = 1)
+    outcome = None        
+    
+    # extract anagrams based on index values
+    outcome_word_id_list = ls_wg_id_list[outcome_indices]    
+    
+    output_list = np.zeros(shape = (outcome_word_id_list.shape[0], 2),  dtype=int)
+    
+    # update the output list with the word_id_list - these are from/parent words    
+    output_list[:, 0] = outcome_word_id_list
+    
+    # update with the word_id - this is the to/child word
+    output_list[:, 1] = wg_id
+
+    return output_list
+
+
+def get_values_even_better(wg_id:int,
+                           nc_ls_tuple:tuple,                           
+                           nc_ls_matrix_dict:dict):
+
+    # this is the submatrix by letter selector
+    nc_ls_wg_id_list, nc_ls_wchar_matrix, nc_ls_wg_id_set = nc_ls_matrix_dict[nc_ls_tuple]
+
+    
+    new_word_id = nc_ls_wg_id_list==wg_id    
+    
+    # now, perform the comparison    
+    outcome = nc_ls_wchar_matrix - nc_ls_wchar_matrix[new_word_id, ]
+
+    # compute the score by finding where rows, across all columns, are GTE 0
+    outcome_indices = np.all(outcome >= 0, axis = 1)
+    outcome = None        
+    
+    # extract anagrams based on index values
+    outcome_word_id_list = nc_ls_wg_id_list[outcome_indices]    
+    
+    output_list = np.zeros(shape = (outcome_word_id_list.shape[0], 2),  dtype=int)
+    
+    # update the output list with the word_id_list - these are from/parent words    
+    output_list[:, 0] = outcome_word_id_list
+    
+    # update with the word_id - this is the to/child word
+    output_list[:, 1] = wg_id
+
+    return output_list
+    
+
+def estimate_total_pairs(word_df:pd.DataFrame, wg_df:pd.DataFrame, nc_ls_matrix_dict:dict):
 
     # list of the number of characters per word
     n_char_list = sorted(word_df['n_chars'].unique().tolist())
@@ -63,14 +112,21 @@ def estimate_total_pairs(word_df:pd.DataFrame, wg_df:pd.DataFrame,
     # enumerate and sample
     output_list = []
     for n_char in n_char_list:
-        curr_id_list = wg_df.loc[wg_df['n_chars']==n_char, 'word_group_id'].to_numpy()
+        # this will get all words that are n_char in length.        
+        curr_id_list = wg_df.loc[wg_df['n_chars']==n_char, 'word_group_id'].to_numpy()        
         # sample with replacement, 10 words per length of word
         sample_id_list = np.random.choice(a = curr_id_list, size = 10, replace = True)
-        for sid in sample_id_list:
-            output = get_values(wg_id = sid, 
-                        n_char_matrix_dict = n_char_matrix_dict,
-                        wg_id_n_char_matrix_dict = wg_id_n_char_matrix_dict)
-            curr_from_words = len(output)
+        sample_df = wg_df.loc[wg_df['word_group_id'].isin(sample_id_list), ['word_group_id', 'nc_ls_tuple']]        
+        
+        for s_wg_id, nc_ls_tuple in zip(sample_df['word_group_id'], sample_df['nc_ls_tuple']):
+            
+
+            # get the values
+            output = get_values_even_better(wg_id = s_wg_id,
+                           nc_ls_tuple = nc_ls_tuple,                           
+                           nc_ls_matrix_dict=nc_ls_matrix_dict)
+            
+            curr_from_words = output.shape[0]
             curr_output = [n_char, curr_from_words]
             output_list.append(curr_output)    
     
