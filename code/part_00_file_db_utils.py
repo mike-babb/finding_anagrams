@@ -87,6 +87,35 @@ def execute_sql_statement(sql, db_path, db_name):
 
     return None
 
+# write this out
+
+def write_data_to_sqlite(df:pd.DataFrame, table_name:str, db_path:str, db_name:str,
+                         if_exists_option='replace',
+                         index_option=False, verbose=True):
+    """
+    A wrapper function to help with writing a pandas df to SQLite
+    :param df:
+    :param table_name:
+    :param db_path:
+    :param db_name:
+    :param db_conn:
+    :param if_exists_option:
+    :param index_option:
+    :return:
+    """
+    db_conn = build_db_conn(db_path = db_path, db_name = db_name)
+
+    if verbose:
+        print('...now writing:', table_name)
+
+    # write the table of interest
+    df.to_sql(name=table_name, con=db_conn, if_exists=if_exists_option,
+              index=index_option)
+    
+    db_conn.close()
+
+    return None
+
 
 if __name__ == "__main__":
     # simple test, query the first 10 words
