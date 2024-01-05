@@ -345,7 +345,7 @@ def get_values_n_char(wg_id: int, n_char: int, n_char_matrix_dict: dict):
     return output_list
 
 
-def get_values_first_letter(
+def get_values_single_letter(
     wg_id: int, single_letter: str, single_letter_matrix_dict: dict
 ):
     # this is the submatrix by single letter
@@ -612,6 +612,33 @@ def store_anagram_pairs(
 
     return None
 
+def format_word_df(word_df:pd.DataFrame,
+                   wg_df:pd.DataFrame,
+                   proc_time_df:pd.DataFrame):
+        
+    
+    # merge the wg_df and the proc_time_df dataframes to get the processing time per word
+    wg_df = pd.merge(left = wg_df, right = proc_time_df)
+
+    # indicate which words were used in the data processing
+    word_df['word_processed'] = int(0)
+    
+    word_df.loc[word_df['word_id'].isin(wg_df['word_id']), 'word_processed'] = 1    
+    
+    # remove columns that will be duplicated, this is necessary for a 
+    # subsequent join
+    drop_col_names = ['word', 'lcase', 'n_chars', 'first_letter', 'word_id', 'letter_group', 'letter_group_ranked']                  
+    
+    wg_df = wg_df.drop(labels = drop_col_names, axis = 1)
+    
+    # merge the word_df and wg_df, this has the processing times
+    word_df = pd.merge(left = word_df, right = wg_df)
+    
+    # convert the nc_ls_tuple column to a string
+    word_df['nc_ls_tuple'] = word_df['nc_ls_tuple'].map(lambda x: ','.join([str(x[0]), x[1]]))
+
+    return word_df
+
 
 def store_anagaram_processing_time(
     output_list: np.array,
@@ -622,55 +649,56 @@ def store_anagaram_processing_time(
     db_path: str,
     db_name: str,
     total_time_start: datetime.datetime,
-):
-    # create database connection objects
-    db_conn = build_db_conn(db_path=db_path, db_name=db_name)
+):    
 
+    # format the word_df for output
+    word_df = format_word_df(word_df = word_df,
+                   wg_df = wg_df,
+                   proc_time_df = proc_time_df)
+    
     # the count of to words
     to_word_counter = collections.Counter(output_list[:, 0])
-
-    # merge the word_df and word_group_df
-    word_df = pd.merge(left = )
-
-    # merge the word_df and the proc_time_df dataframes to get the processing time per word
-    word_df = pd.merge(left=word_df, right=proc_time_df)
 
     # now, use the map function to get the number of from/to words and the number of
     # candidate words for each word
     word_df["n_to_word_groups"] = word_df["word_group_id"].map(to_word_counter)
 
-    # rearrange columns
+
+    # initialize a zero-filled column, this will be updated downstream
+    word_df['n_to_word_groups'] = int(0)
+    
+    # select and order columns
     col_names = [
-        "word",
-        "lcase",
-        "n_chars",
-        "first_letter",
-        "word_id",
-        "word_group_id",
-        "letter_group",
-        "letter_group_ranked",
-        "letter_selector",
-        "nc_ls_tuple",
-        "full_matrix_lookup",
-        "n_char_lookup",
-        "first_letter_lookup",
-        "single_letter_lookup",
-        "letter_selector_lookup",
-        "nc_ls_lookup",
-        "n_seconds",
-        "n_from_word_groups",
-        "n_to_word_groups",
-    ]
-
+            "word",
+            "lcase",
+            "n_chars",
+            "first_letter",
+            "word_id",
+            "word_group_id",
+            "letter_group",
+            "letter_group_ranked",
+            "letter_selector",
+            "nc_ls_tuple",
+            "full_matrix_lookup",
+            "n_char_lookup",
+            "first_letter_lookup",
+            "single_letter_lookup",
+            "letter_selector_lookup",
+            "nc_ls_lookup",
+            "n_seconds",
+            "n_from_word_groups",
+            "n_to_word_groups",
+            "word_processed",            
+        ]
+    
     word_df = word_df[col_names]
-
-    # let's include a field to indicate which word was actually used from the candidate groups
-    word_df["word_processed"] = int(0)
-
-    word_df.loc[word_df["word_id"].isin(wg_df["word_id"]), "word_processed"] = int(1)
-
+    
     # add a matrix extraction option
     word_df["matrix_extraction_option"] = int(matrix_extraction_option)
+
+    # create database connection objects
+    db_conn = build_db_conn(db_path=db_path, db_name=db_name)
+    
 
     # output table name
     table_name = f"words_me_{str(matrix_extraction_option).zfill(2)}"
@@ -699,24 +727,6 @@ def store_anagaram_processing_time(
     print("...total processing time:", total_time_proc, "minutes")
 
     return None
-
-
-def query_db(sql, db_path, db_name, params=None):
-    """QUERY A SQLITE DATABASE, RETURN A PANDAS DATAFRAME"""
-    # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_sql.html
-    db_conn = build_db_conn(db_path=db_path, db_name=db_name)
-
-    s_time = datetime.datetime.now()
-
-    df = pd.read_sql(sql=sql, con=db_conn, params=params)
-    db_conn.close()
-
-    e_time = datetime.datetime.now()
-    p_time = e_time - s_time
-    p_time = p_time.total_seconds()
-    print("...query execution took:", round(p_time, 7), "seconds...")
-
-    return df
 
 
 if __name__ == "__main__":

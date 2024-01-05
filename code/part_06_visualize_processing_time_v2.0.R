@@ -34,8 +34,7 @@ if(!dir.exists(output_path)){
 sqlite <- RSQLite::dbDriver('SQLite')
 db_conn <- RSQLite::dbConnect(drv=sqlite, dbname=db_path_name,  flags = RSQLite::SQLITE_RO)
 
-keep_col_names <- c('word', 'lcase', 'n_chars', 'first_letter', 'word_id', 'word_group_id', 'n_seconds', 'matrix_extraction_option', 'word_processed')
-rename_col_names <- c(keep_col_names, 'n_from_words', 'n_to_words', 'n_candidates')
+keep_col_names <- c('word', 'lcase', 'n_chars', 'first_letter', 'word_group_id', 'n_seconds', 'matrix_extraction_option', 'word_processed')
 
 # use a simple loop to load data from the SQLite tables
 base_sql <- 'select * from table_name;'
@@ -51,45 +50,39 @@ for(tn in seq(1, 5)){
   
   df <- data.table(df)
   
-  df[, matrix_extraction_option := as.integer(tn)]
+
+  df <- df[, ..keep_col_names]
+  df <- df[word_processed == 1, ]
   
-  if(tn == 5){
-    add_col_names <- c('n_from_word_groups', 'n_to_word_groups', 'n_candidates')
-  }else{
-    df[, word_processed := as.integer(1)]
-    add_col_names <- c('n_from_words', 'n_to_words', 'n_candidates')
-  }
-    
-  curr_keep_col_names <- c(keep_col_names, add_col_names)
+  # colnames(df) <- rename_col_names
   
-  
-  df <- df[, ..curr_keep_col_names]
-  
-  colnames(df) <- rename_col_names
-  
-  # 
   
   df_list[[tn]] <- df
 }
+
+# let's also load data featuring the search space
+sql <- 'select * from words_me_05'
+sdf <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
+sdf <- data.table(sdf)
+
+# keep only the following columns
+keep_col_names <- c('word', 'lcase', 'n_chars', 'first_letter', 'word_group_id', 'word_processed', 
+                    'full_matrix_lookup', 'n_char_lookup', 'first_letter_lookup',
+                    'single_letter_lookup', 'letter_selector_lookup',
+                    'nc_ls_lookup')
+
+sdf <- sdf[word_processed == 1, ..keep_col_names]
+
+
 
 # disconnect
 RSQLite::dbDisconnect(conn=db_conn)
 
 # create a datatable
 df <- rbindlist(l= df_list)
-
-
-####
-# EXTRACT ONLY THE WORDS THAT WERE CHECKED FOR MATRIX TYPE 5 - 215k VERSUS 230
-####
-
-df05 <- df[matrix_extraction_option == 5 & word_processed == 1, ]
-
-
-df05$n_seconds %>% sum()
-
-df[, word_processed := 0]
-df[word_id %in% df05$word_id, word_processed := 1]
+proc_time_df <- df[, .(tot_seconds = sum(n_seconds)),
+                   by = (matrix_extraction_option)]
+proc_time_df[, tot_minutes := tot_seconds / 60]
 
 
 ####
@@ -101,13 +94,13 @@ my_factor_labels <- stri_pad(str=my_factor_levels, width = 2, pad = '0')
 df[, me_factor := factor(x=matrix_extraction_option, levels = my_factor_levels, labels = my_factor_labels)]
 
 
+head(df)
+
 # aggregate to get total processing time by letter and other summary stats
-df_agg <- df[word_processed == 1, .(word_count = .N,
+df_agg <- df[, .(word_count = .N,
                  tot_proc_time = sum(n_seconds),
                  mean_proc_time = mean(n_seconds),
-                 med_proc_time = median(n_seconds),
-                 mean_comp_words = mean(n_candidates),
-                 med_comp_words = median(n_candidates)),
+                 med_proc_time = median(n_seconds)),
              by = .(n_chars, matrix_extraction_option, me_factor)]
 
 # reorder, just for inspection
@@ -151,7 +144,7 @@ y_limits <- range(y_breaks)
 
 # make the plot
 my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color = me_factor)) +
-  geom_line(size = 1.5) + 
+  geom_line(linewidth = 1.5) + 
   geom_point(size = 2) +
   ggtitle(label = 'Total Time To Find Anagrams By Word Length And Processing Technique') +
   scale_color_manual(values = my_colors, labels = tt_df$nice_label_format) + 
@@ -180,16 +173,16 @@ dev.off()
 ####
 
 max_avg_seconds <- df_agg$mean_proc_time %>% max()
-max_avg_seconds <- round(max_avg_seconds, 1)
 max_avg_seconds
+max_avg_seconds <- 0.07
 
-y_breaks = seq(0, max_avg_seconds, max_avg_seconds / 10)
+y_breaks = seq(0, max_avg_seconds, .01)
 y_labels <- formatC(x = y_breaks, digits = 2, format = 'f', big.mark = ',')
 y_limits <- range(y_breaks)
 
 my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_factor)) +
   geom_point(size=1.5) + 
-  geom_line(size=2) +
+  geom_line(linewidth=2) +
   ggtitle(label = 'Average Time To Find Anagrams By Word Length And Processing Technique') +
   scale_color_manual(values = my_colors) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
@@ -214,21 +207,57 @@ dev.off()
 # PART 5: POINT AND LINE PLOT OF THE AVERAGE NUMBER OF SEARCH CANDIDATES BY WORD LENGTH AND TECHNIQUE
 ####
 
-df_agg$mean_comp_words %>% summary()
-y_breaks <- seq(0, 250000, 25000)
+head(sdf)
+# melt
+melt_sdf <- melt(data = sdf, id.vars = c('word', 'word_group_id', 'lcase', 'n_chars', 'first_letter',
+                                         'word_processed'),
+                 variable.name = 'matrix_extraction_option',
+                 value.name = 'n_candidates',
+                 variable.factor = FALSE
+                 )
+
+head(melt_sdf)
+
+my_values <- sort(unique(melt_sdf$matrix_extraction_option))
+my_values
+my_factor_labels <- c('ME 03: First Letter',
+                      'ME 01: Full Matrix',
+                      'ME 04: Letter Selector',
+                      'ME 02: Word Length',
+                      'ME 05: Word Length & Letter Selector',
+                      'ME 06: Focal Letter')
+search_df_labels <- data.frame( matrix_extraction_option = my_values)
+search_df_labels <- data.table(search_df_labels)
+search_df_labels[, matrix_extraction_option_labels := my_factor_labels]
+
+search_df_labels <- search_df_labels[order(matrix_extraction_option_labels), ]
+search_df_labels[, matrix_extraction_option_factor := factor(x = matrix_extraction_option_labels,
+                                                             levels = matrix_extraction_option_labels,
+                                                             labels = matrix_extraction_option_labels)]
+
+
+
+melt_sdf <- merge(x = melt_sdf, y = search_df_labels)
+
+melt_sdf_agg <- melt_sdf[, .(mean_comp_words = mean(n_candidates)),
+                       by = .(n_chars, matrix_extraction_option_labels, matrix_extraction_option_factor)]
+
+
+y_breaks <- seq(0, 225000, 25000)
 y_labels <- formatC(x = y_breaks, digits = 0, format = 'f',big.mark = ',')
 y_limits <- range(y_breaks)
 
+my_colors <- RColorBrewer::brewer.pal(n=6, name = 'Dark2')
 
-my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_comp_words, color = me_factor)) +
+my_plot <- ggplot(data=melt_sdf_agg, aes(x=n_chars, y = mean_comp_words, color = matrix_extraction_option_factor)) +
   geom_point(size=1.5) + 
-  geom_line(size=2) +
+  geom_line(linewidth=2) +
   ggtitle(label = 'Average Number of Candidate Words By Word Length And Processing Technique') +
   scale_color_manual(values = my_colors) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
-                   breaks = seq(1,max(df_agg$n_chars)),
-                   labels = factor((seq(1,max(df_agg$n_chars)))),
-                   limits = factor(seq(1, max(df_agg$n_chars)))) +
+                   breaks = seq(1,max(melt_sdf_agg$n_chars)),
+                   labels = factor((seq(1,max(melt_sdf_agg$n_chars)))),
+                   limits = factor(seq(1, max(melt_sdf_agg$n_chars)))) +
   scale_y_continuous(name = 'Average Number of Candidate Words',
                      breaks = y_breaks,
                      labels = y_labels,
@@ -241,6 +270,40 @@ fpn <- file.path(output_path, file_name)
 png(filename = fpn, width = 960, height = 720)
 plot(my_plot)
 dev.off()
+
+# do this now by first letter
+melt_sdf_agg <- melt_sdf[, .(mean_comp_words = mean(n_candidates)),
+                         by = .(first_letter, matrix_extraction_option_labels, matrix_extraction_option_factor)]
+
+
+y_breaks <- seq(0, 225000, 25000)
+y_labels <- formatC(x = y_breaks, digits = 0, format = 'f',big.mark = ',')
+y_limits <- range(y_breaks)
+
+my_colors <- RColorBrewer::brewer.pal(n=6, name = 'Dark2')
+
+my_plot <- ggplot(data=melt_sdf_agg, aes(x=first_letter, y = mean_comp_words, group = matrix_extraction_option_factor,
+                                         color = matrix_extraction_option_factor)) +
+  geom_point(size=1.5) + 
+  geom_line(linewidth=2) +
+  ggtitle(label = 'Average Number of Candidate Words By First Letter And Processing Technique') +
+  scale_color_manual(values = my_colors) + 
+  scale_y_continuous(name = 'Average Number of Candidate Words',
+                     breaks = y_breaks,
+                     labels = y_labels,
+                     limits = y_limits) +
+  guides(color = guide_legend(title = 'Processing\nTechnique')) +
+  theme_bw()
+plot(my_plot)
+
+
+file_name <- 'avg_search_candidates_by_first_letter_v2.png'
+fpn <- file.path(output_path, file_name)
+
+png(filename = fpn, width = 960, height = 720)
+plot(my_plot)
+dev.off()
+
 
 ####
 # PART 6: POINT AND LINE PLOT OF THE AVERAGE NUMBER OF FROM/TO WORDS BY WORD LENGTH, FACETED
