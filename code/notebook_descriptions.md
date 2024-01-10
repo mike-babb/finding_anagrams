@@ -35,11 +35,20 @@ extraction options. I am not sure if it really reduces that much.
 # find_parent_anagram_pairs.ipynb
 
 # GENERAL NOTES
-2023 12 24
+## 2023 12 24
 So, the issue is that I have two many objects - dictionaries, mostly - that I am having a hard time keeping track of them.
 I need to create a schema / list that keeps track of them all. 
 I have also re-done this so many times that I have created the same object too many times. And with different names. Or, slightly different names.
 
+
+## 2024 01 09
+# Matrix selection options
+Option 1: Full matrix
+Option 2: Word-length
+Option 3: First letter
+Option 4: Single-least common letter
+Option 5: n least common letters
+Option 6: word-length and n least common letters
 
 
 
