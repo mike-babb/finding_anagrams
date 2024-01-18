@@ -15,291 +15,174 @@ import pandas as pd
 # custom
 from part_00_file_db_utils import * 
 
-def load_matrix_splits(out_file_path:str):
-
-
-    print('...checking for previously saved matrix splits...')
-
-    # if None: process
-    # if not found: process
-    # if valid: load
-    # file names:
-    file_name_list = [
-    'n_char_matrix_dict.pkl',
-    'single_letter_matrix_dict.pkl',
-    'letter_selector_matrix_dict.pkl',
-    'nc_ls_matrix_dict.pkl',
-    'word_group_df.csv']
-
-    n_found_files = 0
-    for fn in file_name_list:
-        fpn = os.path.join(out_file_path, fn)
-        if os.path.exists(fpn):
-            n_found_files += 1
-    
-    if n_found_files == 5:
-        print('...saved matrix splits found, loading...')
-        # load the data
-        n_char_matrix_dict = load_pickle(in_file_path=out_file_path, 
-                                         in_file_name=file_name_list[0])
-        
-        single_letter_matrix_dict = load_pickle(in_file_path=out_file_path, 
-                                         in_file_name=file_name_list[1])
-        
-        letter_selector_matrix_dict = load_pickle(in_file_path=out_file_path, 
-                                         in_file_name=file_name_list[2])
-        
-        nc_ls_matrix_dict = load_pickle(in_file_path=out_file_path, 
-                                         in_file_name=file_name_list[3])
-        
-        # load the csv
-        fpn = os.path.join(out_file_path, file_name_list[4])
-        wg_df = pd.read_csv(filepath_or_buffer=fpn)
-        
-        output = (n_char_matrix_dict,
-                  single_letter_matrix_dict,
-                  letter_selector_matrix_dict,
-                  nc_ls_matrix_dict,
-                  wg_df)
-    else:
-        print('...previously saved matrix splits not found...')        
-        output = None
-
-    return output
-
-def save_matrix_splits(out_file_path:str,
-                      n_char_matrix_dict:dict,
-                  single_letter_matrix_dict:dict,
-                  letter_selector_matrix_dict:dict,
-                  nc_ls_matrix_dict:dict,
-                  wg_df:pd.DataFrame):
-    
-    file_name_list = [
-    'n_char_matrix_dict.pkl',
-    'single_letter_matrix_dict.pkl',
-    'letter_selector_matrix_dict.pkl',
-    'nc_ls_matrix_dict.pkl',
-    'word_group_df.csv']
-
-    n_found_files = 0
-    print('..checking for previously saved splits...')
-    for fn in file_name_list:
-        fpn = os.path.join(out_file_path, fn)
-        if os.path.exists(fpn):
-            n_found_files += 1
-    
-    if n_found_files != 5:
-        print('...split matrices do not exists, saving.')
-        save_pickle(file_path = out_file_path,
-                    file_name = file_name_list[0],
-                    obj=n_char_matrix_dict)
-        
-        save_pickle(file_path = out_file_path,
-                    file_name = file_name_list[1],
-                    obj=single_letter_matrix_dict)
-        
-        save_pickle(file_path = out_file_path,
-                    file_name = file_name_list[2],
-                    obj=letter_selector_matrix_dict)
-        
-        save_pickle(file_path = out_file_path,
-                    file_name = file_name_list[3],
-                    obj=nc_ls_matrix_dict)
-        
-        fpn = os.path.join(out_file_path, file_name_list[4])
-        wg_df.to_csv(path_or_buf=fpn, index = False)        
-
-    return None
-
 def split_matrix(
     letter_dict: dict,
     word_group_id_list: np.ndarray,
     nc_ls_df: pd.DataFrame,
     wg_df: pd.DataFrame,
-    wchar_matrix: np.ndarray,
-    out_file_path:str=None,
+    wchar_matrix: np.ndarray
 ):
     s_time = datetime.datetime.now()
+    # n char dictionaries
+    n_char_matrix_dict = {}        
 
-    # check if the matrix splits have already been created and we can load them
-    if out_file_path:        
-        matrix_splits = load_matrix_splits(out_file_path=out_file_path)
-    else:        
-        matrix_splits = None
+    # single letter matrix dict
+    single_letter_matrix_dict = {}
     
-    if matrix_splits is not None:
-        n_char_matrix_dict, single_letter_matrix_dict, letter_selector_matrix_dict, nc_ls_matrix_dict, wg_df = matrix_splits
-    else:
-        print('...splitting matrices....')
-        # n char dictionaries
-        n_char_matrix_dict = {}        
+    # letter selector dictionary
+    letter_selector_matrix_dict = {}
+    
+    # the intersection of the two
+    nc_ls_matrix_dict = {}
+    
 
-        # single letter matrix dict
-        single_letter_matrix_dict = {}
-        
-        # letter selector dictionary
-        letter_selector_matrix_dict = {}
-        
-        # the intersection of the two
-        nc_ls_matrix_dict = {}
-        
+    # an array to hold the measurements
+    nc_ls_tuple_list = []
+    split_count_list = []
 
-        # an array to hold the measurements
-        nc_ls_tuple_list = []
-        split_count_list = []
+    # enumerate these combinations only once
+    # reduce the number of times we have to compute sets of ids
+    loop_count = 0
 
-        # enumerate these combinations only once
-        # reduce the number of times we have to compute sets of ids
-        loop_count = 0
+    for nc, ls in zip(nc_ls_df["n_chars"], nc_ls_df["letter_selector"]):
+        # build the number of character splits
+        if nc not in n_char_matrix_dict:
+            nc_wg_id_list = wg_df.loc[
+                (wg_df["n_chars"] >= nc), "word_group_id"
+            ].to_numpy()
+            nc_wg_id_set = set(nc_wg_id_list)
 
-        for nc, ls in zip(nc_ls_df["n_chars"], nc_ls_df["letter_selector"]):
-            # build the number of character splits
-            if nc not in n_char_matrix_dict:
-                nc_wg_id_list = wg_df.loc[
-                    (wg_df["n_chars"] >= nc), "word_group_id"
-                ].to_numpy()
-                nc_wg_id_set = set(nc_wg_id_list)
+            # subset the wchar_matrix to get the sub matrix
+            nc_sub_wchar_matrix = wchar_matrix[nc_wg_id_list,]
 
-                # subset the wchar_matrix to get the sub matrix
-                nc_sub_wchar_matrix = wchar_matrix[nc_wg_id_list,]
+            n_char_matrix_dict[nc] = (nc_wg_id_list, nc_sub_wchar_matrix, nc_wg_id_set)            
+        else:
+            nc_wg_id_list, nc_sub_wchar_matrix, nc_wg_id_set = n_char_matrix_dict[nc]
 
-                n_char_matrix_dict[nc] = (nc_wg_id_list, nc_sub_wchar_matrix, nc_wg_id_set)            
-            else:
-                nc_wg_id_list, nc_sub_wchar_matrix, nc_wg_id_set = n_char_matrix_dict[nc]
+        # extract the first character from the letter selector
+        ll = ls[0]
 
-            # extract the first character from the letter selector
-            ll = ls[0]
+        # check to see if sub-matrix with the first letter has already been created
+        if ll not in single_letter_matrix_dict:
+            # the submatrix has not been created, let's do it.
+            column_selector = [letter_dict[ll]]
+            outcome = wchar_matrix[:, column_selector] > 0
+            outcome_indices = np.all(outcome > 0, axis=1)
 
-            # check to see if sub-matrix with the first letter has already been created
-            if ll not in single_letter_matrix_dict:
-                # the submatrix has not been created, let's do it.
-                column_selector = [letter_dict[ll]]
-                outcome = wchar_matrix[:, column_selector] > 0
-                outcome_indices = np.all(outcome > 0, axis=1)
+            # these indices match with the word_id_list, extract the subset
+            single_letter_word_group_id_list = word_group_id_list[outcome_indices]
+            single_letter_word_group_id_set = set(single_letter_word_group_id_list)
 
-                # these indices match with the word_id_list, extract the subset
-                single_letter_word_group_id_list = word_group_id_list[outcome_indices]
-                single_letter_word_group_id_set = set(single_letter_word_group_id_list)
+            # subset the wchar_matrix to get the sub matrix
+            single_letter_wchar_matrix = wchar_matrix[single_letter_word_group_id_list,]
 
-                # subset the wchar_matrix to get the sub matrix
-                single_letter_wchar_matrix = wchar_matrix[single_letter_word_group_id_list,]
+            single_letter_matrix_dict[ll] = (
+                single_letter_word_group_id_list,
+                single_letter_wchar_matrix,
+                single_letter_word_group_id_set,
+            )            
+        else:
+            # query the sub matrices split by individual letter to then get the smaller partitions
+            (
+                single_letter_word_group_id_list,
+                single_letter_wchar_matrix,
+                single_letter_word_group_id_set,
+            ) = single_letter_matrix_dict[ll]
 
-                single_letter_matrix_dict[ll] = (
-                    single_letter_word_group_id_list,
-                    single_letter_wchar_matrix,
-                    single_letter_word_group_id_set,
-                )            
-            else:
-                # query the sub matrices split by individual letter to then get the smaller partitions
-                (
-                    single_letter_word_group_id_list,
-                    single_letter_wchar_matrix,
-                    single_letter_word_group_id_set,
-                ) = single_letter_matrix_dict[ll]
+        if ls not in letter_selector_matrix_dict:
+            # build a column selector
+            column_selector = [letter_dict[curr_letter] for curr_letter in ls]
 
-            if ls not in letter_selector_matrix_dict:
-                # build a column selector
-                column_selector = [letter_dict[curr_letter] for curr_letter in ls]
+            # get the indices of the single_letter_wchar_matrix that feature the n least common letters
+            outcome = single_letter_wchar_matrix[:, column_selector] > 0
+            outcome_indices = np.all(outcome > 0, axis=1)
 
-                # get the indices of the single_letter_wchar_matrix that feature the n least common letters
-                outcome = single_letter_wchar_matrix[:, column_selector] > 0
-                outcome_indices = np.all(outcome > 0, axis=1)
+            # these are now the ids
+            ls_wg_id_list = single_letter_word_group_id_list[outcome_indices]
+            ls_wg_id_set = set(ls_wg_id_list)
 
-                # these are now the ids
-                ls_wg_id_list = single_letter_word_group_id_list[outcome_indices]
-                ls_wg_id_set = set(ls_wg_id_list)
-
-                # subset the wchar_matrix to get the sub matrix - this contains the three least common letters for a group of words
-                ls_wchar_matrix = wchar_matrix[ls_wg_id_list,]
-                letter_selector_matrix_dict[ls] = (
-                    ls_wg_id_list,
-                    ls_wchar_matrix,
-                    ls_wg_id_set,
-                )            
-            else:
-                # this is the submatrix by letter selector
-                ls_wg_id_list, ls_wchar_matrix, ls_wg_id_set = letter_selector_matrix_dict[
-                    ls
-                ]
-
-            # now, compute the intersection of the two
-            nc_ls_tuple = (nc, ls)
-            # hash that fucker
-            # nc_ls_tuple_hash = hash(nc_ls_tuple)
-
-            # perform the intersection
-            # this is incredibly slow.
-            nc_ls_wg_id_set = nc_wg_id_set.intersection(ls_wg_id_set)
-            # nc_ls_wg_id_list = np.array(object = list(nc_ls_wg_id_set), dtype = int)
-            nc_ls_wg_id_list = np.fromiter(iter=nc_ls_wg_id_set, dtype=int)
-            # now, get the rows
-            nc_ls_wchar_matrix = wchar_matrix[nc_ls_wg_id_list,]
-            nc_ls_matrix_dict[nc_ls_tuple] = (
-                nc_ls_wg_id_list,
-                nc_ls_wchar_matrix,
-                nc_ls_wg_id_set,
-            )
-            
-
-            # let's count things
-            # full matrix, n_char, single character, single letter selector, full letter selector, n_char & letter selector
-            curr_split_count_list = [
-                nc_ls_tuple,
-                wchar_matrix.shape[0],
-                nc_sub_wchar_matrix.shape[0],
-                single_letter_wchar_matrix.shape[0],
-                ls_wchar_matrix.shape[0],
-                nc_ls_wchar_matrix.shape[0],
+            # subset the wchar_matrix to get the sub matrix - this contains the three least common letters for a group of words
+            ls_wchar_matrix = wchar_matrix[ls_wg_id_list,]
+            letter_selector_matrix_dict[ls] = (
+                ls_wg_id_list,
+                ls_wchar_matrix,
+                ls_wg_id_set,
+            )            
+        else:
+            # this is the submatrix by letter selector
+            ls_wg_id_list, ls_wchar_matrix, ls_wg_id_set = letter_selector_matrix_dict[
+                ls
             ]
-            split_count_list.append(curr_split_count_list)
 
-            nc_ls_tuple_list.append(nc_ls_tuple)
+        # now, compute the intersection of the two
+        nc_ls_tuple = (nc, ls)
+        # hash that fucker
+        # nc_ls_tuple_hash = hash(nc_ls_tuple)
 
-            loop_count += 1
-            if loop_count % 1000 == 0:
-                print(loop_count)    
-        
-        e_time = datetime.datetime.now()
-        p_time = e_time - s_time
-        print("Total extraction time:", p_time.total_seconds())
-        
-        # build a dataframe of the different counts by n_char and letter selector
-        split_count_df = pd.DataFrame(
-            data=split_count_list,
-            columns=[
-                "nc_ls_tuple",
-                "full_matrix_lookup",
-                "n_char_lookup",
-                "single_letter_lookup",
-                "letter_selector_lookup",
-                "nc_ls_lookup",
-            ],
+        # perform the intersection
+        # this is incredibly slow.
+        nc_ls_wg_id_set = nc_wg_id_set.intersection(ls_wg_id_set)
+        # nc_ls_wg_id_list = np.array(object = list(nc_ls_wg_id_set), dtype = int)
+        nc_ls_wg_id_list = np.fromiter(iter=nc_ls_wg_id_set, dtype=int)
+        # now, get the rows
+        nc_ls_wchar_matrix = wchar_matrix[nc_ls_wg_id_list,]
+        nc_ls_matrix_dict[nc_ls_tuple] = (
+            nc_ls_wg_id_list,
+            nc_ls_wchar_matrix,
+            nc_ls_wg_id_set,
         )
-        split_count_df[["n_chars", "letter_selector"]] = pd.DataFrame(
-            data=split_count_df["nc_ls_tuple"].tolist(), index=split_count_df.index
-        )
+        
 
-        single_letter_df = split_count_df.loc[
-            split_count_df["n_chars"] == 1, ["letter_selector", "single_letter_lookup"]
+        # let's count things
+        # full matrix, n_char, single character, single letter selector, full letter selector, n_char & letter selector
+        curr_split_count_list = [
+            nc_ls_tuple,
+            wchar_matrix.shape[0],
+            nc_sub_wchar_matrix.shape[0],
+            single_letter_wchar_matrix.shape[0],
+            ls_wchar_matrix.shape[0],
+            nc_ls_wchar_matrix.shape[0],
         ]
-        single_letter_df.columns = ["first_letter", "first_letter_lookup"]
+        split_count_list.append(curr_split_count_list)
 
-        # merge the word group df and the single letter df to get the counts
-        # of lookups by technique
-        wg_df = pd.merge(left = wg_df, right = single_letter_df)
+        nc_ls_tuple_list.append(nc_ls_tuple)
 
-        # same thing with the split count df
-        wg_df = pd.merge(left = wg_df, right = split_count_df)
+        loop_count += 1
+        if loop_count % 1000 == 0:
+            print(loop_count)    
+    
+    e_time = datetime.datetime.now()
+    p_time = e_time - s_time
+    print("Total extraction time:", p_time.total_seconds())
+    
+    # build a dataframe of the different counts by n_char and letter selector
+    split_count_df = pd.DataFrame(
+        data=split_count_list,
+        columns=[
+            "nc_ls_tuple",
+            "full_matrix_lookup",
+            "n_char_lookup",
+            "single_letter_lookup",
+            "letter_selector_lookup",
+            "nc_ls_lookup",
+        ],
+    )
+    split_count_df[["n_chars", "letter_selector"]] = pd.DataFrame(
+        data=split_count_df["nc_ls_tuple"].tolist(), index=split_count_df.index
+    )
 
-    # write this to disk
-    if out_file_path:        
-        save_matrix_splits(out_file_path = out_file_path,
-                          n_char_matrix_dict = n_char_matrix_dict,
-                          single_letter_matrix_dict = single_letter_matrix_dict,
-                          letter_selector_matrix_dict = letter_selector_matrix_dict,
-                          nc_ls_matrix_dict = nc_ls_matrix_dict,
-                          wg_df=wg_df)
+    single_letter_df = split_count_df.loc[
+        split_count_df["n_chars"] == 1, ["letter_selector", "single_letter_lookup"]
+    ]
+    single_letter_df.columns = ["first_letter", "first_letter_lookup"]
 
+    # merge the word group df and the single letter df to get the counts
+    # of lookups by technique
+    wg_df = pd.merge(left = wg_df, right = single_letter_df)
+
+    # same thing with the split count df
+    wg_df = pd.merge(left = wg_df, right = split_count_df)
+    
     return (
         wg_df,
         n_char_matrix_dict,
