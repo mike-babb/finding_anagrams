@@ -63,7 +63,7 @@ def query_db(sql, db_path, db_name, params=None):
 
 
 def execute_sql_statement(sql, db_path, db_name):
-    """EXECUTE ARBITRATY SQL STATEMENTS AGAINST A DATABASE"""
+    """EXECUTE ARBITRAY SQL STATEMENTS AGAINST A DATABASE"""
     # https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor
 
     # build connection and cursor objects
