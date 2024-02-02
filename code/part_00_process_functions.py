@@ -67,15 +67,19 @@ def split_matrix(
     print('...creating', "{:,}".format(n_sub_matrices), 'sub-matrices...')
     
     # word length dictionary
+    # used in matrix extraction option: 2
     n_char_matrix_dict = {}        
 
     # single letter matrix dict
+    # used in matrix extraction option: 3 and 4
     single_letter_matrix_dict = {}
     
     # letter selector dictionary
+    # used in matrix extraction option: 5
     letter_selector_matrix_dict = {}
     
     # word length and lettor selector dictionary
+    # used in matrix extraction option: 6
     nc_ls_matrix_dict = {}    
 
     # an array to hold the measurements    
@@ -371,11 +375,11 @@ def get_values_letter_selector(
 
 
 def get_values_n_char_letter_selector(
-    wg_id: int, nc_ls_tuple: tuple, nc_ls_matrix_dict: dict
+    wg_id: int, nc_ls_id: tuple, nc_ls_matrix_dict: dict
 ):
     # this is the submatrix by letter selector
     nc_ls_wg_id_list, nc_ls_wchar_matrix, nc_ls_wg_id_set = nc_ls_matrix_dict[
-        nc_ls_tuple
+        nc_ls_id
     ]
 
     new_word_id = nc_ls_wg_id_list == wg_id
@@ -413,7 +417,7 @@ def estimate_total_pairs(wg_df: pd.DataFrame, nc_ls_matrix_dict: dict) -> int:
         # get the values using the get_values_n_char_letter_selector() function.
         output = get_values_n_char_letter_selector(
             wg_id=row.word_group_id,
-            nc_ls_tuple=row.nc_ls_tuple,
+            nc_ls_id=row.nc_ls_id,
             nc_ls_matrix_dict=nc_ls_matrix_dict,
         )
 
@@ -464,6 +468,9 @@ def estimate_total_pairs(wg_df: pd.DataFrame, nc_ls_matrix_dict: dict) -> int:
     )
 
     return n_possible_anagrams
+
+
+
 
 
 def generate_from_to_word_group_pairs(
@@ -877,10 +884,12 @@ def store_anagram_processing(
 
     # write the processing option table
     table_name = f"words_me_{str(matrix_extraction_option).zfill(2)}"    
+    print('...now writing', table_name, '...')
     proc_time_df.to_sql(name=table_name, con=db_conn, if_exists="replace", index=False)
 
     # write the word df to disk
     table_name = "words_processed"
+    print('...now writing', table_name, '...')
     word_df.to_sql(name=table_name, con=db_conn, if_exists="replace", index=False)
 
     # close the connection

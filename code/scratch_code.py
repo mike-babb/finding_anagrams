@@ -155,3 +155,11 @@ def compute_word_counts_by_split(count_dict: dict, db_path: str, db_name: str):
         )
 
     return None
+
+
+
+wg_df['n_words'] = 1
+
+blarcho = wg_df.pivot_table(values = 'n_words', columns = 'first_letter', index = 'n_chars', aggfunc = "sum", fill_value =0)
+
+blarcho.to_excel('H:/temp/word_cross_tab.xlsx', index = True)
