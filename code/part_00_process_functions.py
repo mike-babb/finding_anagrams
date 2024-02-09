@@ -319,14 +319,14 @@ def get_values_n_char(wg_id: int, n_char: int, n_char_matrix_dict: dict):
 
 
 def get_values_single_letter(
-    wg_id: int, single_letter: str, single_letter_matrix_dict: dict
+    wg_id: int, single_letter_id: str, single_letter_matrix_dict: dict
 ):
     # this is the submatrix by single letter
     (
         single_letter_word_group_id_list,
         single_letter_wchar_matrix,
         single_letter_word_group_id_set,
-    ) = single_letter_matrix_dict[single_letter]
+    ) = single_letter_matrix_dict[single_letter_id]
 
     new_word_id = single_letter_word_group_id_list == wg_id
 
@@ -348,11 +348,11 @@ def get_values_single_letter(
 
 
 def get_values_letter_selector(
-    wg_id: int, letter_selector: str, letter_selector_matrix_dict: dict
+    wg_id: int, letter_selector_id: str, letter_selector_matrix_dict: dict
 ):
     # this is the submatrix by letter selector
     ls_wg_id_list, ls_wchar_matrix, ls_wg_id_set = letter_selector_matrix_dict[
-        letter_selector
+        letter_selector_id
     ]
 
     new_word_id = ls_wg_id_list == wg_id
@@ -566,28 +566,28 @@ def generate_from_to_word_group_pairs(
                 # option 3: first character
                 outcome_word_id_list = get_values_single_letter(
                     wg_id=wg_id,
-                    single_letter=row.first_letter,
+                    single_letter=row.first_letter_id,
                     single_letter_matrix_dict=single_letter_matrix_dict,
                 )
             elif matrix_extraction_option == 4:
                 # option 4: single least common letter
                 outcome_word_id_list = get_values_single_letter(
                     wg_id=wg_id,
-                    single_letter=row.letter_selector[0],
+                    single_letter=row.single_letter_id,
                     single_letter_matrix_dict=single_letter_matrix_dict,
                 )
             elif matrix_extraction_option == 5:
                 # option 5: letter selector / focal letter
                 outcome_word_id_list = get_values_letter_selector(
                     wg_id=wg_id,
-                    letter_selector=row.letter_selector,
+                    letter_selector=row.letter_selector_id,
                     letter_selector_matrix_dict=letter_selector_matrix_dict,
                 )
             else:
                 # option 6: word length and letter selector
                 outcome_word_id_list = get_values_n_char_letter_selector(
                     wg_id=wg_id,
-                    nc_ls_tuple=row.nc_ls_tuple,
+                    nc_ls_tuple=row.nc_ls_id,
                     nc_ls_matrix_dict=nc_ls_matrix_dict,
                 )
 
@@ -790,6 +790,27 @@ def format_anagaram_processing(
     wg_df: pd.DataFrame,
     matrix_extraction_option: int,
 ) -> None:
+    
+    # the count of to/child words, and in order to do that,
+    # we need to count the number of times each word_group_id
+    # exists in the from/parent column
+    # count the number of to words
+    # seems little counter-intuitive... but we're counting the number of 
+    # to-words from each from-word. So, this is the number of child words
+    # from each parent word.
+    # https://docs.python.org/3/library/collections.html#collections.Counter    
+
+    print('...populating the count of from-words...')
+    n_from_word_counter = collections.Counter(output_list[:, 1])
+
+
+    print('...populating the count of to-words...')
+    n_to_word_counter = collections.Counter(output_list[:, 0])
+    print(len(n_to_word_counter))
+    
+    # get the processed word id
+    processed_word_id = wg_df.loc[wg_df['word_group_id'].isin(n_from_word_counter.keys()), 'word_id'].to_numpy()
+
     # remove columns that will be duplicated, this is necessary for a
     # subsequent join to the word_df
     drop_col_names = [
@@ -802,33 +823,22 @@ def format_anagaram_processing(
         "letter_group_ranked",
     ]
 
+    
     wg_df = wg_df.drop(labels=drop_col_names, axis=1)
 
     # merge the word_df and wg_df, this has the processing times and the number of candidates.
-    word_df = pd.merge(left=word_df, right=wg_df)
-
-    # convert the nc_ls_tuple column to a string
-    word_df["nc_ls_tuple"] = word_df["nc_ls_tuple"].map(
-        lambda x: ",".join([str(x[0]), x[1]])
-    )
-
-    # the count of to/child words, and in order to do that,
-    # we need to count the number of times each word_group_id
-    # exists in the from/parent column
-    ## count the number of to words
-    # https://docs.python.org/3/library/collections.html#collections.Counter
-    # number of to words
-    to_word_counter = collections.Counter(output_list[:, 0])
-
+    word_df = pd.merge(left=word_df, right=wg_df)    
+    
     # now, use the map function to get the number of from/to words and the number of
     # candidate words for each word
     proc_time_df["n_to_word_groups"] = proc_time_df["word_group_id"].map(
-        to_word_counter
+        n_to_word_counter
     )
 
     # indicate which words were used in the data processing
-    word_df["word_processed"] = int(0)
-    word_df.loc[word_df['word_group_id'].isin(to_word_counter.keys()), 'word_processed'] = 1
+    # here we are counting the to words    
+    word_df["word_processed"] = int(0)    
+    word_df.loc[word_df['word_id'].isin(processed_word_id), 'word_processed'] = 1
     
 
     # select and re-order columns
@@ -841,33 +851,23 @@ def format_anagaram_processing(
         "word_group_id",
         "letter_group",
         "letter_group_ranked",
-        "letter_selector",
-        "nc_ls_tuple",
-        "full_matrix_lookup",
-        "n_char_lookup",
-        "first_letter_lookup",
-        "single_letter_lookup",
-        "letter_selector_lookup",
-        "nc_ls_lookup",
+        "letter_selector",        
+        "me_01_full_matrix_lookup",
+        "me_02_n_char_lookup",
+        "me_03_first_letter_lookup",
+        "me_04_single_letter_lookup",
+        "me_05_letter_selector_lookup",
+        "me_06_nc_ls_lookup",
         "word_processed",
     ]
 
     word_df = word_df[col_names]
-
-    # rename some columns to include the matrix extraction option
-    rename_col_dict = {
-        "full_matrix_lookup": "me_01_full_matrix_lookup",
-        "n_char_lookup": "me_02_n_char_lookup",
-        "first_letter_lookup": "me_03_first_letter_lookup",
-        "single_letter_lookup": "me_04_single_letter_lookup",
-        "letter_selector_lookup": "me_05_letter_selector_lookup",
-        "nc_ls_lookup": "me_06_nc_ls_lookup",
-    }
-
-    word_df = word_df.rename(columns=rename_col_dict)
+    
 
     # add a matrix extraction option
     proc_time_df["matrix_extraction_option"] = int(matrix_extraction_option)
+    proc_time_df['lookup_check_from'] = proc_time_df['word_group_id'].map(n_from_word_counter)
+    proc_time_df['lookup_check_to'] = proc_time_df['word_group_id'].map(n_to_word_counter)
 
     return proc_time_df, word_df
 
@@ -888,7 +888,7 @@ def store_anagram_processing(
     proc_time_df.to_sql(name=table_name, con=db_conn, if_exists="replace", index=False)
 
     # write the word df to disk
-    table_name = "words_processed"
+    table_name = f"words_processed_me_{str(matrix_extraction_option).zfill(2)}"    
     print('...now writing', table_name, '...')
     word_df.to_sql(name=table_name, con=db_conn, if_exists="replace", index=False)
 
