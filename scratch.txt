@@ -1,0 +1,26 @@
+
+df$word_processed %>% sum()
+df[, n_chars_char := stri_pad(str = n_chars, width = 2, pad = '0')]
+
+
+df[, me_06_05_diff := me_05_letter_selector_lookup - me_06_nc_ls_lookup]
+df$me_06_05_diff %>% summary()
+tdf <- df[n_chars == 15, ]
+
+
+# let's make a violin plot
+p <- ggplot(data = df,mapping = aes(x = n_chars_char, y=me_06_05_diff)) + 
+  geom_boxplot() +
+  theme_bw()
+  p
+
+
+
+
+my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color = me_factor)) +
+  geom_line(linewidth = 1.5) + 
+  geom_point(size = 2) +
+  ggtitle(label = 'Total Time To Find Anagrams By Word Length And Processing Technique') +
+  
+
+
