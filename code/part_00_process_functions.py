@@ -802,14 +802,14 @@ def format_anagaram_processing(
 
     print('...populating the count of from-words...')
     n_from_word_counter = collections.Counter(output_list[:, 1])
-
+    print(len(n_from_word_counter))
 
     print('...populating the count of to-words...')
     n_to_word_counter = collections.Counter(output_list[:, 0])
     print(len(n_to_word_counter))
     
     # get the processed word id
-    processed_word_id = wg_df.loc[wg_df['word_group_id'].isin(n_from_word_counter.keys()), 'word_id'].to_numpy()
+    processed_word_id = wg_df.loc[wg_df['word_group_id'].isin(n_to_word_counter.keys()), 'word_id'].to_numpy()
 
     # remove columns that will be duplicated, this is necessary for a
     # subsequent join to the word_df
@@ -866,8 +866,8 @@ def format_anagaram_processing(
 
     # add a matrix extraction option
     proc_time_df["matrix_extraction_option"] = int(matrix_extraction_option)
-    proc_time_df['lookup_check_from'] = proc_time_df['word_group_id'].map(n_from_word_counter)
-    proc_time_df['lookup_check_to'] = proc_time_df['word_group_id'].map(n_to_word_counter)
+    #proc_time_df['lookup_check_from'] = proc_time_df['word_group_id'].map(n_from_word_counter)
+    #proc_time_df['lookup_check_to'] = proc_time_df['word_group_id'].map(n_to_word_counter)
 
     return proc_time_df, word_df
 
