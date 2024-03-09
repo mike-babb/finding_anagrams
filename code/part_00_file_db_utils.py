@@ -57,7 +57,7 @@ def query_db(sql, db_path, db_name, params=None):
     e_time = datetime.datetime.now()
     p_time = e_time - s_time
     p_time = p_time.total_seconds()
-    print("...query execution took:", round(p_time, 7), "seconds...")
+    print("...query execution took:", round(p_time, 2), "seconds...")
 
     return df
 
@@ -78,7 +78,7 @@ def execute_sql_statement(sql, db_path, db_name):
     e_time = datetime.datetime.now()
     p_time = e_time - s_time
     p_time = p_time.total_seconds()
-    p_time = round(p_time, 7)
+    p_time = round(p_time, 2)
     print("...SQL execution took:", p_time, "seconds.")
 
     # close connection objects

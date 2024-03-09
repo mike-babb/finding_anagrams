@@ -788,8 +788,8 @@ def generate_from_to_word_group_pairs_simple(
     proc_time_df.columns = ["word_group_id", "n_seconds", "n_from_word_groups"]
 
     # display processing time for the current letter
-    total_proc_time_s = round(proc_time_df["n_seconds"].sum(), 4)
-    total_proc_time_m = round(proc_time_df["n_seconds"].sum() / 60, 4)
+    total_proc_time_s = round(proc_time_df["n_seconds"].sum(), 2)
+    total_proc_time_m = round(proc_time_df["n_seconds"].sum() / 60, 2)
     print(
         "...finding parent anagrams for",
         n_curr_words,
@@ -833,18 +833,15 @@ def generate_from_to_word_group_pairs_simple(
         n_to_word_counter
     )
 
-    # get the processed word id - this crosswalks from word_group_id 
-    # to word_id - the word that was processed
-    processed_word_id = wg_df.loc[
-        wg_df["word_group_id"].isin(n_to_word_counter.keys()), "word_id"
-    ].to_numpy()
-
+    # record the matrix extraction option
+    proc_time_df['matrix_extraction_option'] = matrix_extraction_option
+    
     # how many anagram pairs were found?
     n_total_anagrams = output_list.shape[0]
     n_total_anagrams_formatted = "{:,}".format(n_total_anagrams)
     print("...total anagram pairs:", n_total_anagrams_formatted)
 
-    return proc_time_df, output_list, processed_word_id
+    return proc_time_df, output_list
 
 def store_anagram_pairs(
     output_list: np.array, db_path: str, db_name: str, cut_size: int = 1000000
@@ -926,7 +923,7 @@ def store_anagram_pairs(
                 format="%m/%d/%Y, %H:%M:%S"
             )
 
-            mean_write_time = round(mean_write_time, 3)
+            mean_write_time = round(mean_write_time, 2)
             print(
                 "...average write time per 10M records:", mean_write_time, "seconds..."
             )
@@ -954,57 +951,8 @@ def store_anagram_pairs(
 
     return None
 
-
-def format_anagaram_processing(    
-    proc_time_df: pd.DataFrame,
-    word_df: pd.DataFrame,
-    wg_df: pd.DataFrame,
-    processed_word_id:np.ndarray,
-    matrix_extraction_option: int,
-) -> tuple:
-
-    # remove columns that will be duplicated, this is necessary for a
-    # subsequent join to the word_df
-    drop_col_names = [
-        "word",
-        "lcase",
-        "n_chars",
-        "first_letter",
-        "word_id",
-        "letter_group",
-        "letter_group_ranked",
-    ]
-
-    wg_df = wg_df.drop(labels=drop_col_names, axis=1)
-
-    # merge the word_df and wg_df, this has the processing times and the number of candidates.
-    word_df = pd.merge(left=word_df, right=wg_df)
-
-    # indicate which words were used in the data processing
-    # here we are counting the to words
-    word_df["word_processed"] = int(0)
-    word_df.loc[word_df["word_id"].isin(processed_word_id), "word_processed"] = 1
-
-    # select and re-order columns
-    col_names = [
-        "word_id",
-        "word_group_id",        
-        "word_processed",
-    ]
-
-    word_df = word_df[col_names]
-
-    # add a matrix extraction option
-    proc_time_df["matrix_extraction_option"] = int(matrix_extraction_option)
-    # proc_time_df['lookup_check_from'] = proc_time_df['word_group_id'].map(n_from_word_counter)
-    # proc_time_df['lookup_check_to'] = proc_time_df['word_group_id'].map(n_to_word_counter)
-
-    return proc_time_df, word_df
-
-
 def store_anagram_processing(
-    proc_time_df: str,
-    word_df: str,
+    proc_time_df: str,    
     matrix_extraction_option: str,
     db_path: str,
     db_name: str,
@@ -1020,14 +968,6 @@ def store_anagram_processing(
                          db_path=db_path,
                          db_name=db_name)
     
-    # write the word df to disk
-    table_name = f"words_processed_me_{str(matrix_extraction_option).zfill(2)}"
-    write_data_to_sqlite(df = word_df,
-                         table_name=table_name,
-                         db_path=db_path,
-                         db_name=db_name)
-
-    
     # close the connection
     db_conn.close()
 
@@ -1040,8 +980,8 @@ def display_total_processing_time(
     anagram_discovery_time_seconds = proc_time_df["n_seconds"].sum()
     anagram_discovery_time_minutes = anagram_discovery_time_seconds / 60
 
-    anagram_discovery_time_seconds = round(anagram_discovery_time_seconds, 4)
-    anagram_discovery_time_minutes = round(anagram_discovery_time_minutes, 4)
+    anagram_discovery_time_seconds = round(anagram_discovery_time_seconds, 2)
+    anagram_discovery_time_minutes = round(anagram_discovery_time_minutes, 2)
 
     print(
         "...anagram discovery time:",
@@ -1056,6 +996,8 @@ def display_total_processing_time(
     total_time_proc = total_time_end - total_time_start
     total_time_seconds = total_time_proc.total_seconds()
     total_time_minutes = total_time_seconds / 60
+    # round for display
+    total_time_seconds = round(total_time_seconds, 2)    
     total_time_minutes = round(total_time_minutes, 2)
 
     print("...total processing time:", total_time_seconds, "seconds |",  total_time_minutes, "minutes")
