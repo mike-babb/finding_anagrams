@@ -93,7 +93,7 @@ def find_from_to_word_pairs(matrix_extraction_option: int, letter_subset_list: s
         # option 6
         nc_ls_matrix_dict = None
 
-    proc_time_df, output_list = generate_from_to_word_group_pairs(
+    proc_time_df, output_list = generate_from_to_word_group_pairs_simple(
         wg_df=wg_df,
         n_possible_anagrams=n_possible_anagrams,
         matrix_extraction_option=matrix_extraction_option,

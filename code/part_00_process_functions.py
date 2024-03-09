@@ -70,7 +70,7 @@ def split_matrix(
     wg_df: pd.DataFrame,
     wchar_matrix: np.ndarray,
     n_subset_letters: int,    
-    matrix_extraction_option:int
+    matrix_extraction_option:int=0
 ):
 
     # the different matrix extraction options
@@ -800,7 +800,6 @@ def generate_from_to_word_group_pairs_simple(
         "minutes..."        
     )
 
-
     # truncate the output array to only include rows with a from/to word pair
     # this removes any row that has a value of -1
     print('...truncating output list...')
@@ -808,12 +807,44 @@ def generate_from_to_word_group_pairs_simple(
     output_list = output_list[output_indices,]
     del output_indices
 
+    # initialize Counters to hold the count of found pairs for a given word
+    # for the count of to/child words, we need to count the number of times
+    # each word_group_id
+    # exists in the from/parent column
+    # count the number of to words
+    # seems little counter-intuitive... but we're counting the number of
+    # to-words from each from-word. So, this is the number of child words
+    # from each parent word.
+    # https://docs.python.org/3/library/collections.html#collections.Counter
+    
+
+    # we do not need the count of from-word... 
+    # leaving in for convenience
+    # print("...populating the count of from-words...")
+    # n_from_word_counter = collections.Counter(output_list[:, 1])
+
+    print("...populating the count of to-words...")
+    n_to_word_counter = collections.Counter(output_list[:, 0])
+    #print(len(n_to_word_counter))
+
+    # now, use the map function to get the number of from/to words and the number of
+    # candidate words for each word
+    proc_time_df["n_to_word_groups"] = proc_time_df["word_group_id"].map(
+        n_to_word_counter
+    )
+
+    # get the processed word id - this crosswalks from word_group_id 
+    # to word_id - the word that was processed
+    processed_word_id = wg_df.loc[
+        wg_df["word_group_id"].isin(n_to_word_counter.keys()), "word_id"
+    ].to_numpy()
+
     # how many anagram pairs were found?
     n_total_anagrams = output_list.shape[0]
     n_total_anagrams_formatted = "{:,}".format(n_total_anagrams)
-    print("...total anagrams:", n_total_anagrams_formatted)    
+    print("...total anagram pairs:", n_total_anagrams_formatted)
 
-    return proc_time_df, output_list
+    return proc_time_df, output_list, processed_word_id
 
 def store_anagram_pairs(
     output_list: np.array, db_path: str, db_name: str, cut_size: int = 1000000
@@ -924,34 +955,13 @@ def store_anagram_pairs(
     return None
 
 
-def format_anagaram_processing(
-    output_list: np.array,
+def format_anagaram_processing(    
     proc_time_df: pd.DataFrame,
     word_df: pd.DataFrame,
     wg_df: pd.DataFrame,
+    processed_word_id:np.ndarray,
     matrix_extraction_option: int,
-) -> None:
-    # the count of to/child words, and in order to do that,
-    # we need to count the number of times each word_group_id
-    # exists in the from/parent column
-    # count the number of to words
-    # seems little counter-intuitive... but we're counting the number of
-    # to-words from each from-word. So, this is the number of child words
-    # from each parent word.
-    # https://docs.python.org/3/library/collections.html#collections.Counter
-
-    print("...populating the count of from-words...")
-    n_from_word_counter = collections.Counter(output_list[:, 1])
-    print(len(n_from_word_counter))
-
-    print("...populating the count of to-words...")
-    n_to_word_counter = collections.Counter(output_list[:, 0])
-    print(len(n_to_word_counter))
-
-    # get the processed word id
-    processed_word_id = wg_df.loc[
-        wg_df["word_group_id"].isin(n_to_word_counter.keys()), "word_id"
-    ].to_numpy()
+) -> tuple:
 
     # remove columns that will be duplicated, this is necessary for a
     # subsequent join to the word_df
@@ -969,12 +979,6 @@ def format_anagaram_processing(
 
     # merge the word_df and wg_df, this has the processing times and the number of candidates.
     word_df = pd.merge(left=word_df, right=wg_df)
-
-    # now, use the map function to get the number of from/to words and the number of
-    # candidate words for each word
-    proc_time_df["n_to_word_groups"] = proc_time_df["word_group_id"].map(
-        n_to_word_counter
-    )
 
     # indicate which words were used in the data processing
     # here we are counting the to words
@@ -1050,11 +1054,11 @@ def display_total_processing_time(
     # record the total time
     total_time_end = datetime.datetime.now()
     total_time_proc = total_time_end - total_time_start
-    total_time_proc = total_time_proc.total_seconds()
-    total_time_proc = total_time_proc / 60
-    total_time_proc = round(total_time_proc, 2)
+    total_time_seconds = total_time_proc.total_seconds()
+    total_time_minutes = total_time_seconds / 60
+    total_time_minutes = round(total_time_minutes, 2)
 
-    print("...total processing time:", total_time_proc, "minutes")
+    print("...total processing time:", total_time_seconds, "seconds |",  total_time_minutes, "minutes")
 
     return None
 
