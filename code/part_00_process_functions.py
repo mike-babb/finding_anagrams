@@ -6,7 +6,7 @@
 import collections
 import datetime
 import os
-import string
+from time import perf_counter_ns
 
 # external
 import numpy as np
@@ -82,7 +82,7 @@ def split_matrix(
     # Option 5: n least common letters - return matrices split by least common letters
     # Option 6: word-length and n least common letters - return matrices split by least common letters and word length.
     
-    s_time = datetime.datetime.now()
+    s_time = perf_counter_ns()
 
     # create the letter selector and determine the max number
     # of sub-matrices to makes
@@ -126,18 +126,16 @@ def split_matrix(
         # create dictionaries to hold sets - these will only exist in the context of this function
         n_char_set_dict = {}
         single_letter_set_dict = {}
-        letter_selector_set_dict = {}
-        nc_ls_set_dict ={}    
+        letter_selector_set_dict = {}        
     
         # enumerate these combinations only once
-        # reduce the number of times we have to compute ids and sub-matrices
-        
+        # reduce the number of times we have to compute ids and sub-matrices        
 
         # we have created some ids, but we don't need to enumerate for all of the 
         # matrix extraction options.
         # but because of the way enumeration and creation of dictionaries is 
         # setup, we're over-enumerating for options 2 through 5. 
-        # this is trade off between minimizing code and data enumeration   
+        # this is trade off between minimizing code, code reuse, and data enumeration   
         n_records = nc_ls_df.shape[0]            
         
         print("...enumerating", "{:,}".format(n_records), "records...")        
@@ -308,10 +306,8 @@ def split_matrix(
         if matrix_extraction_option in (0,6):
             n_sub_matrices = len(nc_ls_matrix_dict)
         
-        print("...{:,}".format(n_sub_matrices), "sub-matrices created...")
-        e_time = datetime.datetime.now()
-        p_time = e_time - s_time
-        p_time = round(p_time.total_seconds(), 2)
+        print("...{:,}".format(n_sub_matrices), "sub-matrices created...")        
+        p_time = calc_time(time_start=s_time)
         print("Total extraction time:", p_time, "seconds.")
 
     # set things to None so that we can free up memory and reduce overhead
@@ -396,17 +392,23 @@ def compute_lookups(wg_df:pd.DataFrame,
     wg_lu_df = wg_df[col_names].copy()
     
     # count the look-ups!
+    # matrix extraction option 1
     wg_lu_df["me_01_full_matrix_lookup"] = wg_df.shape[0]
+    # matrix extraction option 2
     wg_lu_df["me_02_n_char_lookup"] = wg_lu_df["n_chars"].map(n_char_lu_dict)
+    # matrix extraction option 3
     wg_lu_df["me_03_first_letter_lookup"] = wg_lu_df["first_letter_id"].map(
     single_letter_lu_dict
     )
+    # matrix extraction option 4
     wg_lu_df["me_04_single_letter_lookup"] = wg_lu_df["single_letter_id"].map(
     single_letter_lu_dict
     )
+    # matrix extraction option 5
     wg_lu_df["me_05_letter_selector_lookup"] = wg_lu_df["letter_selector_id"].map(
     letter_selector_lu_dict
     )
+    # matrix extraction option 6
     wg_lu_df["me_06_nc_ls_lookup"] = wg_lu_df["nc_ls_id"].map(nc_ls_lu_dict)
 
     # write this to disk
@@ -453,9 +455,7 @@ def format_demo_output(demo_word: str, word_df: pd.DataFrame, demo_output: np.nd
 def get_values_full_matrix(
     wg_id: int, wchar_matrix: np.ndarray, word_group_id_list: np.ndarray
 ):
-    """FIND ANAGRAMS FOR A SPECIFIC USING word_group_id AND MATRIX COMPARISONS
-    This is the simplest technique
-    """
+    # matrix extraction option 1
 
     outcome = wchar_matrix - wchar_matrix[wg_id,]
 
@@ -474,10 +474,14 @@ def get_values_full_matrix(
 
 
 def get_values_n_char(wg_id: int, n_char: int, n_char_matrix_dict: dict):
+
+    # matrix extraction option 2
+
     nc_wg_id_list, nc_sub_wchar_matrix = n_char_matrix_dict[n_char]
     new_word_id = nc_wg_id_list == wg_id
+  
 
-    # now, perform the comparison
+    # perform the comparison
     outcome = nc_sub_wchar_matrix - nc_sub_wchar_matrix[new_word_id,]
 
     # compute the score by finding where rows, across all columns, are GTE 0
@@ -497,7 +501,7 @@ def get_values_n_char(wg_id: int, n_char: int, n_char_matrix_dict: dict):
 def get_values_single_letter(
     wg_id: int, single_letter_id: str, single_letter_matrix_dict: dict
 ):
-    # this is the submatrix by single letter
+    # matrix extraction option 3 and 4
     (
         single_letter_word_group_id_list,
         single_letter_wchar_matrix        
@@ -525,7 +529,7 @@ def get_values_single_letter(
 def get_values_letter_selector(
     wg_id: int, letter_selector_id: str, letter_selector_matrix_dict: dict
 ):
-    # this is the submatrix by letter selector
+    # matrix extraction option 5
     ls_wg_id_list, ls_wchar_matrix = letter_selector_matrix_dict[
         letter_selector_id
     ]
@@ -552,7 +556,7 @@ def get_values_letter_selector(
 def get_values_n_char_letter_selector(
     wg_id: int, nc_ls_id: tuple, nc_ls_matrix_dict: dict
 ):
-    # this is the submatrix by letter selector
+    # matrix extraction option 6
     nc_ls_wg_id_list, nc_ls_wchar_matrix = nc_ls_matrix_dict[nc_ls_id]
 
     new_word_id = nc_ls_wg_id_list == wg_id
@@ -578,7 +582,7 @@ def estimate_total_pairs(wg_df: pd.DataFrame, letter_selector_matrix_dict: dict)
     # Sample 10 words of each word length, compute the number of from/parent
     # anagrams for each word in the sample, compute the min, mean, and max,
     # and apply those values to the numbers of words by length and multiply
-    # accordingly this will give us (very generous) upper bounds of anagram pairs
+    # accordingly. this will give us (very generous) upper bounds of anagram pairs
 
     # sample 10 words from each word based on word length.
     # words are anywhere from 1 character to 24 characters, 240 samples
@@ -661,7 +665,7 @@ def generate_from_to_word_group_pairs_simple(
     
     # use numpy to pre-allocate an array that will be updated while enumerating.
     # this eliminates list.append() calls which are fine in small amounts, but
-    # hundreds of thousands of append calls add a lot of overhead.
+    # hundreds of thousands of append calls are very slow.
 
     output_list = np.full(shape=(n_possible_anagrams, 2), fill_value=-1, dtype=int)    
 
@@ -693,7 +697,7 @@ def generate_from_to_word_group_pairs_simple(
     # enumerate by word id, working with integers is faster than words
     for row in curr_wg_df.itertuples(index=False):
         # start timing to record processing for each word
-        s_time = datetime.datetime.now()
+        s_time = perf_counter_ns()
 
         # word group id
         wg_id = row.word_group_id        
@@ -769,11 +773,9 @@ def generate_from_to_word_group_pairs_simple(
         # delete the intermediate list
         del outcome_word_id_list
 
-        # record the time for the word
-        e_time = datetime.datetime.now()
-        p_time = e_time - s_time
-        p_time = round(p_time.total_seconds(), 8)
-
+        # record the time for the word        
+        p_time = calc_time(time_start=s_time, round_digits=-1)
+        
         proc_time_dict[wg_id] = (p_time, n_from_words)
 
         row_count += 1
@@ -818,14 +820,12 @@ def generate_from_to_word_group_pairs_simple(
     # https://docs.python.org/3/library/collections.html#collections.Counter
     
 
-    # we do not need the count of from-word... 
-    # leaving in for convenience
+    # we do not need the count of from-word, but leaving in for convenience
     # print("...populating the count of from-words...")
     # n_from_word_counter = collections.Counter(output_list[:, 1])
 
     print("...populating the count of to-words...")
-    n_to_word_counter = collections.Counter(output_list[:, 0])
-    #print(len(n_to_word_counter))
+    n_to_word_counter = collections.Counter(output_list[:, 0])    
 
     # now, use the map function to get the number of from/to words and the number of
     # candidate words for each word
@@ -991,10 +991,8 @@ def display_total_processing_time(
         "minutes",
     )
 
-    # record the total time
-    total_time_end = datetime.datetime.now()
-    total_time_proc = total_time_end - total_time_start
-    total_time_seconds = total_time_proc.total_seconds()
+    # record the total time    
+    total_time_seconds = calc_time(time_start=total_time_start, round_digits=-1)    
     total_time_minutes = total_time_seconds / 60
     # round for display
     total_time_seconds = round(total_time_seconds, 2)    

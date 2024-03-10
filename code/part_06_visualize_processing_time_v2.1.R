@@ -34,16 +34,16 @@ if(!dir.exists(output_path)){
 sqlite <- RSQLite::dbDriver('SQLite')
 db_conn <- RSQLite::dbConnect(drv=sqlite, dbname=db_path_name,  flags = RSQLite::SQLITE_RO)
 
-sql <- 'select * from words_processed;'
+# word groups
+sql <- 'select * from word_groups;'
 full_wp_df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
 full_wp_df <- data.table(full_wp_df)
-wp_df <- full_wp_df[word_processed == 1, ]
+head(full_wp_df)
 
-sql <- 'select * from word_groups;'
-wg_df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
-wg_df <- data.table(wg_df)
-
-
+# search candidates
+sql <- 'select * from word_group_lookup_counts;'
+wg_lu_df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
+wg_lu_df <- data.table(wg_lu_df)
 
 # use a simple loop to load data from the SQLite tables
 base_sql <- 'select * from table_name;'
@@ -79,8 +79,10 @@ proc_time_df[, tot_minutes := tot_seconds / 60]
 my_factor_levels <- ft_df$matrix_extraction_option %>% unique() %>% sort(decreasing = TRUE)
 my_factor_labels <- stri_pad(str=my_factor_levels, width = 2, pad = '0')
 ft_df[, me_factor := factor(x=matrix_extraction_option, levels = my_factor_levels, labels = my_factor_labels)]
+head(ft_df)
 
-ft_df <- merge(x = ft_df, y = wg_df[, .(word_group_id, n_chars)])
+
+ft_df <- merge(x = ft_df, y = full_wp_df[, .(word_group_id, n_chars)])
 
 # aggregate to get total processing time by letter and other summary stats
 df_agg <- ft_df[, .(word_count = .N,
@@ -151,7 +153,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color =
 my_plot
 
 # save plot to disk
-file_name <- 'tot_proc_time_by_word_length_v2.png'
+file_name <- 'tot_proc_time_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -190,7 +192,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_fac
 
 my_plot
 
-file_name <- 'avg_proc_time_by_word_length_v2.png'
+file_name <- 'avg_proc_time_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -201,20 +203,7 @@ dev.off()
 # PART 5: POINT AND LINE PLOT OF THE AVERAGE NUMBER OF SEARCH CANDIDATES BY WORD LENGTH AND TECHNIQUE
 ####
 
-id_vars <- c('word','word_id', 'word_group_id', 'lcase', 'n_chars', 'first_letter',
-             'letter_group', 'letter_group_ranked', 'letter_selector',
-             'word_processed')
-
-# melt
-melt_wp_df <- melt(data = wp_df, id.vars = id_vars,
-                 variable.name = 'matrix_extraction_option',
-                 value.name = 'n_candidates',
-                 variable.factor = FALSE
-                 )
-
-head(melt_wp_df)
-
-my_values <- sort(unique(melt_wp_df$matrix_extraction_option))
+my_values <- sort(unique(ft_df$matrix_extraction_option))
 my_values
 my_factor_labels <- c(
   'ME 01: Full Matrix',
@@ -233,11 +222,32 @@ search_df_labels[, matrix_extraction_option_factor := factor(x = matrix_extracti
                                                              levels = matrix_extraction_option_labels,
                                                              labels = matrix_extraction_option_labels)]
 
-search_df_labels
+# melt the wg_lu_df 
 
-melt_sdf <- merge(x = melt_wp_df, y = search_df_labels)
+# drop column names
+col_names <- c("word_group_id","n_chars","me_01_full_matrix_lookup",
+               "me_02_n_char_lookup","me_03_first_letter_lookup",
+               "me_04_single_letter_lookup","me_05_letter_selector_lookup",
+               "me_06_nc_ls_lookup")
 
-melt_sdf_agg <- melt_sdf[, .(mean_comp_words = mean(n_candidates)),
+wg_lu_df <- wg_lu_df[, ..col_names]
+
+melt_wg_lu_df <- melt.data.table(data = wg_lu_df,
+                                 id.vars = c('word_group_id',
+                                             'n_chars'),
+                                 variable.name = 'matrix_extraction_option_label',
+                                 value.name = 'n_candidates',variable.factor = FALSE
+                                  )
+melt_wg_lu_df[, matrix_extraction_option := substr(x = matrix_extraction_option_label,
+                                                   start = 5,stop = 5)]
+melt_wg_lu_df[, matrix_extraction_option := as.integer(matrix_extraction_option)]
+head(melt_wg_lu_df)
+
+head(search_df_labels)
+
+melt_wg_lu_df <- merge(x = melt_wg_lu_df, y = search_df_labels, by = c('matrix_extraction_option'))
+
+melt_sdf_agg <- melt_wg_lu_df[, .(mean_comp_words = mean(n_candidates)),
                        by = .(n_chars, matrix_extraction_option_labels, matrix_extraction_option_factor)]
 
 
@@ -271,6 +281,11 @@ fpn <- file.path(output_path, file_name)
 png(filename = fpn, width = 960, height = 720)
 plot(my_plot)
 dev.off()
+
+####
+# PART 6: POINT AND LINE PLOT OF THE AVERAGE NUMBER OF FROM/TO WORDS BY WORD LENGTH, FACETED
+####
+
 
 
 ####
@@ -329,3 +344,84 @@ fpn <- file.path(output_path, file_name)
 png(filename = fpn, width = 960, height = 720)
 plot(my_plot)
 dev.off()
+
+####
+# Box and whisker plot of the distribution of from to words
+####
+
+
+w_ft_df <- ft_df[matrix_extraction_option == 1, ]
+head(w_ft_df)
+
+w_ft_df$n_from_word_groups %>% summary()
+w_ft_df$n_to_word_groups %>% summary()
+
+# remove values less than 99.5%
+upper_bound <- quantile(x= w_ft_df$n_to_word_groups, probs = .995)
+upper_bound
+
+w_ft_df <- w_ft_df[n_to_word_groups <= upper_bound, ]
+
+y_breaks <- seq(0, 4000, 1000)
+y_labels <- formatC(x = y_breaks, digits = 0, format = 'f',big.mark = ',')
+y_limits <- range(y_breaks)
+
+
+my_plot <- ggplot(data=w_ft_df, aes(x=n_chars, y = n_to_word_groups, group = n_chars)) +
+  geom_boxplot() + 
+  ggtitle(label = 'Number of To Words By Word Length') +
+  scale_x_discrete(name = 'Word length (# of Characters)',
+                   breaks = seq(1,max(df_agg$n_chars)),
+                   labels = factor((seq(1,max(df_agg$n_chars)))),
+                   limits = factor(seq(1, max(df_agg$n_chars)))) +
+  scale_y_continuous(name = 'Number of To Words') +
+  theme_bw()
+
+my_plot
+
+
+####
+# Box and whisker plot of the distribution of search candidates for 2 - 6
+####
+
+wdf <- melt_wg_lu_df[, ]
+head(wdf)
+
+wdf$n_candidates %>% summary()
+
+# remove values less than 99.5%
+
+y_breaks <- seq(0, 220000, 20000)
+y_labels <- formatC(x = y_breaks, digits = 0, format = 'f',big.mark = ',')
+y_limits <- range(y_breaks)
+y_labels
+
+head(wdf)
+
+
+my_plot <- ggplot(data=wdf, aes(x=n_chars, y = n_candidates, group = n_chars)) +
+  geom_boxplot() + 
+  ggtitle(label = 'Number of Candidates') +
+  scale_x_discrete(name = 'Word length (# of Characters)',
+                   breaks = seq(1,max(df_agg$n_chars)),
+                   labels = factor((seq(1,max(df_agg$n_chars)))),
+                   limits = factor(seq(1, max(df_agg$n_chars)))) +
+  scale_y_continuous(name = 'Number of candidates') +
+  theme_bw()  +
+  facet_grid(rows = vars(matrix_extraction_option_factor), scales = 'free')
+
+my_plot
+
+file_name <- 'number_of_candidates_to_words_by_word_length.png'
+fpn <- file.path(output_path, file_name)
+
+png(filename = fpn, width = 960, height = 720)
+plot(my_plot)
+dev.off()
+
+
+
+
+
+
+

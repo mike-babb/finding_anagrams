@@ -3,16 +3,22 @@
 # functions used to find anagrams
 
 # standard libraries
-import collections
-import datetime
+from time import perf_counter_ns
 import os
 import pickle
 import sqlite3
 
 # external
-import numpy as np
 import pandas as pd
 
+def calc_time(time_start:perf_counter_ns,                      
+              round_digits:int = 2) -> float:
+    
+    time_end = perf_counter_ns()
+    time_proc = (time_end - time_start) / 1e9    
+    if round_digits != -1:
+        time_proc = round(time_proc, round_digits)
+    return time_proc
 
 # helper function to save pickled objects
 def save_pickle(file_path, file_name, obj):
@@ -49,15 +55,14 @@ def query_db(sql, db_path, db_name, params=None):
     # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_sql.html
     db_conn = build_db_conn(db_path=db_path, db_name=db_name)
 
-    s_time = datetime.datetime.now()
+    s_time = perf_counter_ns()
 
     df = pd.read_sql(sql=sql, con=db_conn, params=params)
     db_conn.close()
 
-    e_time = datetime.datetime.now()
-    p_time = e_time - s_time
-    p_time = p_time.total_seconds()
-    print("...query execution took:", round(p_time, 2), "seconds...")
+    p_time = calc_time(s_time)   
+       
+    print("...query execution took:", p_time, "seconds...")
 
     return df
 
@@ -71,14 +76,11 @@ def execute_sql_statement(sql, db_path, db_name):
     db_cursor = db_conn.cursor()
 
     # execute the sql statement
-    s_time = datetime.datetime.now()
+    s_time = perf_counter_ns()
     db_cursor.execute(sql)
     db_conn.commit()
 
-    e_time = datetime.datetime.now()
-    p_time = e_time - s_time
-    p_time = p_time.total_seconds()
-    p_time = round(p_time, 2)
+    p_time = calc_time(s_time)       
     print("...SQL execution took:", p_time, "seconds.")
 
     # close connection objects
