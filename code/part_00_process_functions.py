@@ -644,7 +644,23 @@ def estimate_total_pairs(wg_df: pd.DataFrame, letter_selector_matrix_dict: dict)
         "...estimated number of from/to pair word pairs:", n_possible_anagrams_formatted
     )
 
+    return n_possible_anagrams, agg_pos_df
+
+
+def load_possible_anagrams(db_path:str, db_name:str) -> pd.DataFrame:
+
+    sql = 'select * from n_possible_anagrams;'
+    agg_pos_df = query_db(sql = sql, db_path = db_path, db_name = db_name)
+    n_possible_anagrams = (
+        agg_pos_df["n_tot_mean_anagrams"].sum() + agg_pos_df["n_tot_max_anagrams"].sum()
+    ) / 2
+
+    # round and convert to integer
+    n_possible_anagrams = int(np.round(n_possible_anagrams, 0))
+
     return n_possible_anagrams
+
+    
 
 
 ####

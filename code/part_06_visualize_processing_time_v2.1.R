@@ -36,16 +36,16 @@ db_conn <- RSQLite::dbConnect(drv=sqlite, dbname=db_path_name,  flags = RSQLite:
 
 # word groups
 sql <- 'select * from word_groups;'
-full_wp_df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
-full_wp_df <- data.table(full_wp_df)
-head(full_wp_df)
+wg_df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
+wg_df <- data.table(wg_df)
+head(wg_df)
 
-# search candidates
+# look up counts
 sql <- 'select * from word_group_lookup_counts;'
 wg_lu_df <- RSQLite::dbGetQuery(conn=db_conn, statement = sql)
 wg_lu_df <- data.table(wg_lu_df)
 
-# use a simple loop to load data from the SQLite tables
+# use a simple loop to load data from the processed word tables
 base_sql <- 'select * from table_name;'
 df_list <- list()
 for(tn in seq(1, 6)){
@@ -65,9 +65,15 @@ for(tn in seq(1, 6)){
 # disconnect
 RSQLite::dbDisconnect(conn=db_conn)
 
-# create a datatable
+# create a datatable: the timing and look up dataframes
 rm(df)
-ft_df <- rbindlist(l= df_list)
+tdf <- rbindlist(l = df_list)
+head(tdf)
+table(tdf$matrix_extraction_option)
+
+
+
+
 proc_time_df <- ft_df[, .(tot_seconds = sum(n_seconds)),
                    by = (matrix_extraction_option)]
 proc_time_df[, tot_minutes := tot_seconds / 60]
@@ -82,7 +88,7 @@ ft_df[, me_factor := factor(x=matrix_extraction_option, levels = my_factor_level
 head(ft_df)
 
 
-ft_df <- merge(x = ft_df, y = full_wp_df[, .(word_group_id, n_chars)])
+ft_df <- merge(x = ft_df, y = wg_df[, .(word_group_id, n_chars)])
 
 # aggregate to get total processing time by letter and other summary stats
 df_agg <- ft_df[, .(word_count = .N,
