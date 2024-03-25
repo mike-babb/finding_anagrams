@@ -6,7 +6,7 @@
 # # Find Anagrams
 # ## Part 1: Structure the data
 
-# In[1]:
+# In[ ]:
 
 
 # standard libraries - installed by default
@@ -16,7 +16,7 @@ import os
 import string
 
 
-# In[2]:
+# In[ ]:
 
 
 # external libraries - not installed by default
@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 
-# In[3]:
+# In[ ]:
 
 
 # custom, user-defined functions
@@ -35,7 +35,7 @@ from part_00_file_db_utils import *
 
 # ### import list of words, shape data
 
-# In[4]:
+# In[ ]:
 
 
 def import_and_format_words(in_fpn:str):
@@ -47,7 +47,7 @@ def import_and_format_words(in_fpn:str):
     
     # how many words are we working with?
     n_words = len(word_df)
-    print('...found', '{:,}'.format(n_words), 'words to find anagrams for...')
+    print('...found', '{:,}'.format(n_words), 'words to find relationships for...')
     
     # convert the only column to a string - just to be safe.
     # 'nan' is a word in the dictionary. nan is an internal python value.
@@ -75,7 +75,7 @@ def import_and_format_words(in_fpn:str):
     return word_df
 
 
-# In[5]:
+# In[ ]:
 
 
 def compute_word_group_id(word_df:pd.DataFrame) -> pd.DataFrame:        
@@ -110,11 +110,10 @@ def compute_word_group_id(word_df:pd.DataFrame) -> pd.DataFrame:
 
 # ### count letter frequency
 
-# In[6]:
+# In[ ]:
 
 
-def count_letter_frequency(word_df:pd.DataFrame):    
-
+def count_letter_frequency(word_df:pd.DataFrame):   
 
     print('...counting letter frequencies...')
     # several versions of the anagram determination technique require subsetting by letters in each word. 
@@ -213,10 +212,10 @@ def count_letter_frequency(word_df:pd.DataFrame):
 
 # ### generate the character matrix
 
-# In[7]:
+# In[ ]:
 
 
-def generate_character_matrix(word_df:pd.DataFrame) -> np.ndarray:
+def generate_character_matrix(word_df:pd.DataFrame, letter_dict:dict) -> np.ndarray:
     # count the occurences of each letter in each word and store the results in a matrix named char_matrix
     # populate the char_matrix and the word_id dictionary
     # Apply a function to each row in the dataframe to accomplish this
@@ -262,7 +261,7 @@ def generate_character_matrix(word_df:pd.DataFrame) -> np.ndarray:
 
 # # Extract and save the word_group dataframes
 
-# In[8]:
+# In[ ]:
 
 
 def create_word_group_df(word_df:pd.DataFrame) -> pd.DataFrame:    
@@ -283,23 +282,21 @@ def create_word_group_df(word_df:pd.DataFrame) -> pd.DataFrame:
 
 # ### save data to disk - first the char matrix and the letter dictionary
 
-# In[9]:
+# In[ ]:
 
 
 def save_objects(char_matrix:np.ndarray, letter_dict:dict, word_df:pd.DataFrame,
                  wg_df:pd.DataFrame, letter_count_df:pd.DataFrame,
                  output_file_path:str, db_name:str) -> None:
 
-    print('...saving...')
-
     # save the char matrix in the numpy format
-    print('...the character matrix...')
+    print('...saving the character matrix...')
     output_name = 'char_matrix.npy'
     opn = os.path.join(output_file_path, output_name)
     np.save(file = opn, arr = char_matrix)
     
     # letter dictionary
-    print('...the letter dictionary...')
+    print('...saving the letter dictionary...')
     output_name = 'letter_dict.pkl'
     save_pickle(file_path = output_file_path, file_name = output_name, obj = letter_dict)
     
@@ -315,119 +312,6 @@ def save_objects(char_matrix:np.ndarray, letter_dict:dict, word_df:pd.DataFrame,
     return None
 
 
-# In[10]:
-
-
-# path and name of input data
-in_file_path = '/git/finding_anagrams/data/'
-in_file_name = 'words.txt'
-
-base_output_file_path = '/project/finding_anagrams'
-
-
-# In[11]:
-
-
-# construct the input file path
-in_fpn = os.path.join(in_file_path, in_file_name)
-
-# paths to output directories
-output_file_path = os.path.join(base_output_file_path, 'data')
-db_name = 'words.db'
-
-# setup the data output path
-if os.path.exists(output_file_path):
-    pass
-else:
-    os.makedirs(output_file_path)
-
-
-# In[12]:
-
-
-word_df = import_and_format_words(in_fpn = in_fpn)
-
-
-# In[13]:
-
-
-word_df, letter_dict = compute_word_group_id(word_df = word_df)
-
-
-# In[14]:
-
-
-word_df.head()
-
-
-# In[ ]:
-
-
-
-
-
-# In[15]:
-
-
-word_df, letter_count_df, letter_count_rank_dict = count_letter_frequency(word_df = word_df)
-
-
-# In[16]:
-
-
-char_matrix = generate_character_matrix(word_df = word_df)
-
-
-# In[17]:
-
-
-wg_df = create_word_group_df(word_df = word_df)
-
-
-# In[18]:
-
-
-save_objects(char_matrix = char_matrix, letter_dict = letter_dict, word_df = word_df,
-                 wg_df = wg_df, letter_count_df = letter_count_df,
-                 output_file_path = output_file_path, db_name=db_name)
-
-
-# In[19]:
-
-
-word_df.head()
-
-
-# In[20]:
-
-
-wg_df.head()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
 # In[ ]:
 
 
@@ -438,44 +322,34 @@ def run_it(in_file_path:str, in_file_name:str,
     in_fpn = os.path.join(in_file_path, in_file_name)
     
     # paths to output directories
-    output_file_path = os.path.join(base_output_file_path, 'data')    
+    output_file_path = os.path.join(base_output_file_path, 'data')
+    db_name = 'words.db'
     
     # setup the data output path
     if os.path.exists(output_file_path):
         pass
     else:
         os.makedirs(output_file_path)
-    
-    
+
+    # import the list of words as a pandas dataframe
     word_df = import_and_format_words(in_fpn = in_fpn)
-    
+
+    # compute the word group id and create the letter dict lookup
     word_df, letter_dict = compute_word_group_id(word_df = word_df)
     
+    # count letter frequencies   
     word_df, letter_count_df, letter_count_rank_dict = count_letter_frequency(word_df = word_df)
-    
-    char_matrix = generate_character_matrix(word_df = word_df)
-    
-    wg_df = create_word_group_df(word_df = word_df)    
-    
-    
+
+    # build the character matrix
+    char_matrix = generate_character_matrix(word_df = word_df, letter_dict = letter_dict)
+
+    # create the word group dataframe - removes all exact word groups
+    wg_df = create_word_group_df(word_df = word_df)
+
+    # save everything to disk
     save_objects(char_matrix = char_matrix, letter_dict = letter_dict, word_df = word_df,
                      wg_df = wg_df, letter_count_df = letter_count_df,
-                     output_file_path = output_file_path, db_name=db_name)
-    
-
-    
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
+                     output_file_path = output_file_path, db_name=db_name)    
 
 
 # In[ ]:
