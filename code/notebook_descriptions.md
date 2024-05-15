@@ -1,23 +1,35 @@
 
 # part_01_structure_data_v1.0.ipynb
+- deleted
 # part_01_structure_data_v2.0.ipynb
+- cleaned up and ported to a script
+- needs a timing script?
 # part_02_generate_and_store_anagrams_v1.0.ipynb
-Uses words
+- Uses words
+- deleted
 
-# part_02_generate_and_store_anagrams_v2.0.ipynb
-Uses word groups
-options 1 through 4:
-This is code complete
+# part_02b_demonstrate_extraction_timing_techniques.ipynb
+- needs a timing script
 
+# part_02b_generate_and_store_anagrams_v2.0.ipynb
+- Uses word groups
+- options 1 through 4:
+- This is code complete
+- now complete with options 0 - 6. Awesome.
+- 
 
 # part_02_generate_and_store_anagrams_v2.1.ipynb
+- deleted
 # part_02_generate_and_store_anagrams_v2.2.ipynb
+- deleted
 # part_02_generate_and_store_anagrams_v2.3.ipynb
+- deleted
 Build option 5 - two rounds of submatrix extraction.
 2023 10 12: this is the part that is currently broken
 
 
-part_02_generate_and_store_anagrams_v2.4_build_sub_matrices.ipynb
+# part_02_generate_and_store_anagrams_v2.4_build_sub_matrices.ipynb
+- deleted
 part_03_query_anagram_database_v1.0.ipynb
 part_03_query_anagram_database_v2.0.ipynb
 part_04_add_database_indices_v1.0.ipynb
@@ -49,6 +61,8 @@ Option 3: First letter
 Option 4: Single-least common letter
 Option 5: n least common letters
 Option 6: word-length and n least common letters
+
+# 
 
 
 
