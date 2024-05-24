@@ -62,7 +62,21 @@ Option 4: Single-least common letter
 Option 5: n least common letters
 Option 6: word-length and n least common letters
 
-# 
+# 2024 05 23
+Now, we need to clean things up.
+
+find_parent_anagram_pairs.ipynb
+part_01_structure_data_v2.0.ipynb
+part_02a_demonstrate_extraction_timing_techniques.ipynb
+part_02a_demonstrate_extraction_timing_techniques_for_export.ipynb
+part_02b_generate_and_store_anagrams_v2.0.ipynb
+part_03_query_anagram_database_v2.0.ipynb
+part_04_add_database_indices_v2.0.ipynb
+part_05_build_a_graph_v2.0.ipynb
+query_matrix.ipynb
+scratcho.ipynb
+temp_hold_code.ipynb
+
 
 
 
