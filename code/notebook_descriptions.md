@@ -63,13 +63,18 @@ Option 5: n least common letters
 Option 6: word-length and n least common letters
 
 # 2024 05 23
-Now, we need to clean things up.
 
-find_parent_anagram_pairs.ipynb
+## EXTRACT
 part_01_structure_data_v2.0.ipynb
+part_01_structure_data_v2.0.py
+
 part_02a_demonstrate_extraction_timing_techniques.ipynb
 part_02a_demonstrate_extraction_timing_techniques_for_export.ipynb
+
+## TRANSFORM AND LOAD
 part_02b_generate_and_store_anagrams_v2.0.ipynb
+
+## QUERY
 part_03_query_anagram_database_v2.0.ipynb
 part_04_add_database_indices_v2.0.ipynb
 part_05_build_a_graph_v2.0.ipynb
@@ -77,7 +82,15 @@ query_matrix.ipynb
 scratcho.ipynb
 temp_hold_code.ipynb
 
+## DEMO
+find_parent_anagram_pairs.ipynb
+
+## UTILS
+fix_the_matrix_splits.py
+part_00_file_db_utils.py
+part_00_process_functions.py
 
 
-
+## NEEDED!
+call graph demo
 
