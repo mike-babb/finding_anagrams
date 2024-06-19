@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 
 # custom, user-defined functions
+import _run_constants as rc
 from part_00_file_db_utils import *
-
 
 def import_and_format_words(in_fpn: str):
     # use pandas to load the data
@@ -336,16 +336,10 @@ def run_it(
     )
 
 
-if __name__ == "__main__":
-    # path and name of input data
-    in_file_path = "/git/finding_anagrams/data/"
-    in_file_name = "words.txt"
-    # output paths
-    base_output_file_path = "/project/finding_anagrams"
-    db_name = "words.db"
+if __name__ == "__main__":    
     run_it(
-        in_file_path=in_file_path,
-        in_file_name=in_file_name,
-        base_output_file_path=base_output_file_path,
-        db_name=db_name,
+        in_file_path=rc.in_file_path,
+        in_file_name=rc.in_file_name,
+        base_output_file_path=rc.base_output_file_path,
+        db_name=rc.db_name,
     )

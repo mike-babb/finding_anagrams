@@ -150,8 +150,9 @@ def split_matrix(
                 nc_ls_id = row.nc_ls_id
             
             ####
-            # MATRIX EXTRACTION OPTION1: NO SUB-MATRICES ARE CREATED.
+            # MATRIX EXTRACTION OPTION 1: NO SUB-MATRICES ARE CREATED.
             ####
+            # (Block left here for convenience)
             
             ####
             # MATRIX EXTRACTION OPTION 2: DICTIONARY BY NUMBER OF CHARACTERS
@@ -305,10 +306,13 @@ def split_matrix(
 
         if matrix_extraction_option in (0,6):
             n_sub_matrices = len(nc_ls_matrix_dict)
+    else:
+        n_sub_matrices = 0
+
         
-        print("...{:,}".format(n_sub_matrices), "sub-matrices created...")        
-        p_time = calc_time(time_start=s_time)
-        print("Total extraction time:", p_time, "seconds.")
+    print("...{:,}".format(n_sub_matrices), "sub-matrices created...")        
+    p_time = calc_time(time_start=s_time)
+    print("Total extraction time:", p_time, "seconds.")
 
     # set things to None so that we can free up memory and reduce overhead
     # these objects are no longer needed
@@ -335,6 +339,7 @@ def split_matrix(
         single_letter_matrix_dict,
         letter_selector_matrix_dict,
         nc_ls_matrix_dict,
+        p_time
     )
 
 def test_matrix_extraction_option(wg_df:pd.DataFrame,
@@ -343,11 +348,11 @@ def test_matrix_extraction_option(wg_df:pd.DataFrame,
                                   wchar_matrix:np.ndarray,
                                   n_subset_letters:int):
 
-
+    output_list = []
     for meo in range(0, 7):
         print('*** matrix extraction option:', meo, '***')
 
-        wg_df, n_char_matrix_dict, single_letter_matrix_dict, letter_selector_matrix_dict, nc_ls_matrix_dict= split_matrix(
+        wg_df, n_char_matrix_dict, single_letter_matrix_dict, letter_selector_matrix_dict, nc_ls_matrix_dict, p_time = split_matrix(
             letter_dict = letter_dict,
             word_group_id_list = word_group_id_list,
                 wg_df = wg_df,
@@ -356,14 +361,45 @@ def test_matrix_extraction_option(wg_df:pd.DataFrame,
             matrix_extraction_option=meo
         )
 
-        print('n_char_matrix_dict:', type(n_char_matrix_dict))
-        print('single_letter_matrix_dict:', type(single_letter_matrix_dict))
-        print('letter_selector_matrix_dict:', type(letter_selector_matrix_dict))
-        print('nc_ls_matrix_dict:', type(nc_ls_matrix_dict))
+        if n_char_matrix_dict is None:
+            n_char_matrix_dict_items = -1
+        else:
+            n_char_matrix_dict_items = len(n_char_matrix_dict)
 
-        print(wg_df.head())
+        if single_letter_matrix_dict is None:
+            single_letter_matrix_dict_items = -1
+        else:
+            single_letter_matrix_dict_items = len(single_letter_matrix_dict)
 
-    return None
+        if letter_selector_matrix_dict is None:
+            letter_selector_matrix_dict_items = -1
+        else:
+            letter_selector_matrix_dict_items = len(letter_selector_matrix_dict)
+
+        if nc_ls_matrix_dict is None:
+            nc_ls_matrix_dict_items = -1
+        else:
+            nc_ls_matrix_dict_items = len(nc_ls_matrix_dict)
+        
+        temp_dict = {
+            'matrix_extraction_option':meo,            
+            'n_char_matrix_dict_type': type(n_char_matrix_dict),
+            'single_letter_matrix_dict_type': type(single_letter_matrix_dict),
+            'letter_selector_matrix_dict_type': type(letter_selector_matrix_dict),
+            'nc_ls_matrix_dict_type': type(nc_ls_matrix_dict),
+            'n_char_matrix_dict_items': n_char_matrix_dict_items,
+            'single_letter_matrix_dict_items': single_letter_matrix_dict_items,
+            'letter_selector_matrix_dict_items': letter_selector_matrix_dict_items,
+            'nc_ls_matrix_dict_items': nc_ls_matrix_dict_items,
+            'process_time':p_time
+        }
+        output_list.append(temp_dict)
+
+    # create an output dataframe
+    output_df = pd.DataFrame(output_list)
+    
+
+    return output_df
 
 def compute_lookups(wg_df:pd.DataFrame,
                     n_char_matrix_dict:dict,
@@ -375,7 +411,7 @@ def compute_lookups(wg_df:pd.DataFrame,
     
     # time to count some stuff!
 
-    # count the number of look ups for a letter
+    # count the number of look ups for a single letter
     n_char_lu_dict = {nc:nc_items[0].shape[0] for nc, nc_items in n_char_matrix_dict.items()}    
 
     # count the number of look ups
@@ -1020,5 +1056,5 @@ def display_total_processing_time(
 
 
 if __name__ == "__main__":
-    # simple test, query the first 10 words
+    # gotta do something...
     print("The dean? hellos")

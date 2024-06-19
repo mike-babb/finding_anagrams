@@ -11,6 +11,22 @@ import sqlite3
 # external
 import pandas as pd
 
+# custom
+import _run_constants as rc
+
+
+# setup the data output path
+def create_path(data_output_file_path:str) -> None:
+    
+    if os.path.exists(data_output_file_path):
+        print(os.path.normpath(data_output_file_path), 'exists')
+    else:
+        os.makedirs(data_output_file_path)
+
+    return None
+
+
+
 def calc_time(time_start:perf_counter_ns,                      
               round_digits:int = 2) -> float:
     
@@ -122,7 +138,7 @@ def write_data_to_sqlite(df:pd.DataFrame, table_name:str, db_path:str, db_name:s
 if __name__ == "__main__":
     # simple test, query the first 10 words
     sql = "select * from words limit 10;"
-    db_path = "/project/finding_anagrams/db"
-    db_name = "words.db"
+    db_path = rc.db_path
+    db_name = rc.db_name
     df = query_db(sql=sql, db_path=db_path, db_name=db_name)
     print(df.head())

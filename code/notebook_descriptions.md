@@ -48,7 +48,7 @@ extraction options. I am not sure if it really reduces that much.
 
 # GENERAL NOTES
 ## 2023 12 24
-So, the issue is that I have two many objects - dictionaries, mostly - that I am having a hard time keeping track of them.
+So, the issue is that I have too many objects - dictionaries, mostly - that I am having a hard time keeping track of them.
 I need to create a schema / list that keeps track of them all. 
 I have also re-done this so many times that I have created the same object too many times. And with different names. Or, slightly different names.
 
@@ -94,3 +94,5 @@ part_00_process_functions.py
 ## NEEDED!
 call graph demo
 
+# 2024 06 12
+Update the paths to load the run constants
