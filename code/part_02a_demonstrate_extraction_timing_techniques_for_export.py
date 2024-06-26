@@ -1,10 +1,14 @@
-# %% [markdown]
+#!/usr/bin/env python
+# coding: utf-8
+
 # # Mike Babb
 # # babbm@uw.edu
 # # Find anagrams
 # ## Part 2a: Demonstrate extraction timing techniques
 
-# %%
+# In[ ]:
+
+
 # standard libraries - installed by default
 from itertools import product
 import pickle
@@ -14,18 +18,27 @@ import os
 from time import perf_counter_ns
 import timeit
 
-# %%
+
+# In[ ]:
+
+
 # external libraries - not installed by default
 import numpy as np
 import pandas as pd
 
-# %%
+
+# In[ ]:
+
+
 # custom, user-defined functions
 import _run_constants as rc
 from part_00_file_db_utils import *
 from part_00_process_functions import *
 
-# %%
+
+# In[ ]:
+
+
 def demo_extraction_techniques(word_df, wg_df, demo_word):
 
     
@@ -133,7 +146,10 @@ def demo_extraction_techniques(word_df, wg_df, demo_word):
     # we can store the quoted code in a dictionary and then enumerate. 
     # we'll run each code chunk 100 times and then compute the average
 
-# %%
+
+# In[ ]:
+
+
 def demo_lookups(n_trials, ):
     n_trials = 100
 
@@ -227,7 +243,10 @@ def demo_lookups(n_trials, ):
     return timing_list
         
 
-# %%
+
+# In[ ]:
+
+
 def run_it(db_path, db_name, in_file_path, demo_word:str = 'achiever'):
     
     ####
@@ -317,7 +336,9 @@ def run_it(db_path, db_name, in_file_path, demo_word:str = 'achiever'):
 
 
 
-# %%
+# In[ ]:
+
+
 if __name__ == "__main__":
     
     run_it(db_path=rc.db_path, db_name = rc.db_name, in_file_path = rc.in_file_path)
@@ -327,5 +348,4 @@ if __name__ == "__main__":
     # options 5 and 6 are the fastest, each over 100 times faster than option 1
     # option 4 - just using the single least common letter - is 10X faster than option 1
     # and 6X faster than option 3 - using the starting the letter of the word.
-
 
