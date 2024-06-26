@@ -31,7 +31,8 @@ def load_input_data(db_path: str, db_name: str, in_file_path: str) -> pd.DataFra
     # load the letter dictionary from part 1
     print("...loading the letter dictionary...")
     in_file_name = "letter_dict.pkl"
-    letter_dict = load_pickle(in_file_path=in_file_path, in_file_name=in_file_name)
+    letter_dict = load_pickle(
+        in_file_path=in_file_path, in_file_name=in_file_name)
 
     # load the char matrix from part 1
     print("...loading the char matrix...")
@@ -69,8 +70,8 @@ def split_matrix(
     word_group_id_list: np.ndarray,
     wg_df: pd.DataFrame,
     wchar_matrix: np.ndarray,
-    n_subset_letters: int,    
-    matrix_extraction_option:int=0
+    n_subset_letters: int,
+    matrix_extraction_option: int = 0
 ):
 
     # the different matrix extraction options
@@ -81,79 +82,82 @@ def split_matrix(
     # Option 4: Single-least common letter - return matrices split by each letter
     # Option 5: n least common letters - return matrices split by least common letters
     # Option 6: word-length and n least common letters - return matrices split by least common letters and word length.
-    
+
     s_time = perf_counter_ns()
 
     # create the letter selector and determine the max number
     # of sub-matrices to makes
     wg_df["letter_selector"] = wg_df["letter_group_ranked"].str[:n_subset_letters]
     wg_df["first_letter_id"] = wg_df["first_letter"].map(letter_dict)
-    wg_df["single_letter_id"] = wg_df["letter_selector"].str[0].map(letter_dict)
+    wg_df["single_letter_id"] = wg_df["letter_selector"].str[0].map(
+        letter_dict)
 
     # build the letter selector id
     letter_selector_list = wg_df["letter_selector"].unique()
     letter_selector_list.sort()
-    letter_selector_id_dict = {ls: i_ls for i_ls, ls in enumerate(letter_selector_list)}
+    letter_selector_id_dict = {ls: i_ls for i_ls,
+                               ls in enumerate(letter_selector_list)}
 
-    wg_df["letter_selector_id"] = wg_df["letter_selector"].map(letter_selector_id_dict)    
+    wg_df["letter_selector_id"] = wg_df["letter_selector"].map(
+        letter_selector_id_dict)
 
     nc_ls_df = wg_df[
         ["n_chars", "letter_selector_id", "letter_selector"]
     ].drop_duplicates()
     nc_ls_df["nc_ls_id"] = range(0, nc_ls_df.shape[0])
 
-    wg_df = pd.merge(left=wg_df, right=nc_ls_df)    
+    wg_df = pd.merge(left=wg_df, right=nc_ls_df)
 
     # only proceed if matrix_extraction_option != 1:
-    if matrix_extraction_option != 1:        
-    
+    if matrix_extraction_option != 1:
+
         # word length dictionary
         # used in matrix extraction option: 2
-        n_char_matrix_dict = {}    
-    
+        n_char_matrix_dict = {}
+
         # single letter matrix dict
         # used in matrix extraction option: 3 and 4
-        single_letter_matrix_dict = {}    
-    
+        single_letter_matrix_dict = {}
+
         # letter selector dictionary
         # used in matrix extraction option: 5
-        letter_selector_matrix_dict = {}    
-    
+        letter_selector_matrix_dict = {}
+
         # word length and lettor selector dictionary
         # used in matrix extraction option: 6
         nc_ls_matrix_dict = {}
-    
+
         # create dictionaries to hold sets - these will only exist in the context of this function
         n_char_set_dict = {}
         single_letter_set_dict = {}
-        letter_selector_set_dict = {}        
-    
+        letter_selector_set_dict = {}
+
         # enumerate these combinations only once
-        # reduce the number of times we have to compute ids and sub-matrices        
+        # reduce the number of times we have to compute ids and sub-matrices
 
-        # we have created some ids, but we don't need to enumerate for all of the 
+        # we have created some ids, but we don't need to enumerate for all of the
         # matrix extraction options.
-        # but because of the way enumeration and creation of dictionaries is 
-        # setup, we're over-enumerating for options 2 through 5. 
-        # this is trade off between minimizing code, code reuse, and data enumeration   
-        n_records = nc_ls_df.shape[0]            
-        
-        print("...enumerating", "{:,}".format(n_records), "records...")        
+        # but because of the way enumeration and creation of dictionaries is
+        # setup, we're over-enumerating for options 2 through 5.
+        # this is trade off between minimizing code, code reuse, and data enumeration
+        n_records = nc_ls_df.shape[0]
 
-        loop_count = 0 
-        for row in nc_ls_df.itertuples(index = False):
+        print("...enumerating", "{:,}".format(n_records), "records...")
+
+        loop_count = 0
+        for row in nc_ls_df.itertuples(index=False):
             nc = row.n_chars
             ls = row.letter_selector
             ls_id = row.letter_selector_id
-            
-            if matrix_extraction_option in (0,6):
+
+            if matrix_extraction_option in (0, 6):
                 nc_ls_id = row.nc_ls_id
-            
+
             ####
             # MATRIX EXTRACTION OPTION 1: NO SUB-MATRICES ARE CREATED.
             ####
             # (Block left here for convenience)
-            
+
             ####
             # MATRIX EXTRACTION OPTION 2: DICTIONARY BY NUMBER OF CHARACTERS
             ####
@@ -162,113 +166,115 @@ def split_matrix(
                     (wg_df["n_chars"] >= nc), "word_group_id"
                 ].to_numpy()
                 nc_wg_id_set = set(nc_wg_id_list)
-                n_char_set_dict[nc] = nc_wg_id_set            
-    
+                n_char_set_dict[nc] = nc_wg_id_set
+
                 # subset the wchar_matrix to get the sub-matrix
                 nc_sub_wchar_matrix = wchar_matrix[nc_wg_id_list,]
-    
+
                 n_char_matrix_dict[nc] = (nc_wg_id_list, nc_sub_wchar_matrix)
-                
+
             else:
                 nc_wg_id_list, nc_sub_wchar_matrix = n_char_matrix_dict[nc]
                 nc_wg_id_set = n_char_set_dict[nc]
-    
+
             ####
             # MATRIX EXTRACTION OPTION 3 AND 4: DICTIONARY BY SINGLE-LETTER
             ####
             ll = ls[0]
             ll_id = letter_dict[ll]
-    
+
             # check to see if the sub-matrix with the first letter has already been created
             if ll_id not in single_letter_matrix_dict:
                 # the submatrix has not been created, let's do it.
                 column_selector = [ll_id]
                 outcome = wchar_matrix[:, column_selector] > 0
                 outcome_indices = np.all(outcome > 0, axis=1)
-    
+
                 # these indices match with the word_id_list, extract the subset
                 single_letter_word_group_id_list = word_group_id_list[outcome_indices]
-    
+
                 # the set of ids
-                single_letter_word_group_id_set = set(single_letter_word_group_id_list)
+                single_letter_word_group_id_set = set(
+                    single_letter_word_group_id_list)
                 single_letter_set_dict[ll_id] = single_letter_word_group_id_set
-        
+
                 # subset the wchar_matrix to get the sub-matrix
                 single_letter_wchar_matrix = wchar_matrix[single_letter_word_group_id_list, ]
-    
+
                 single_letter_matrix_dict[ll_id] = (
                     single_letter_word_group_id_list,
-                    single_letter_wchar_matrix                
+                    single_letter_wchar_matrix
                 )
-                
+
             else:
                 # query the sub-matrices split by individual letter to then get the smaller partitions
                 (
                     single_letter_word_group_id_list,
-                    single_letter_wchar_matrix,                
+                    single_letter_wchar_matrix,
                 ) = single_letter_matrix_dict[ll_id]
-    
+
                 single_letter_word_group_id_set = single_letter_set_dict[ll_id]
-    
+
             ####
             # MATRIX EXTRACTION OPTION 5: DICTIONARY BY LETTER SELECTOR
             ####
             if ls_id not in letter_selector_matrix_dict:
                 # build a column selector
-                column_selector = [letter_dict[curr_letter] for curr_letter in ls]
-    
+                column_selector = [letter_dict[curr_letter]
+                                   for curr_letter in ls]
+
                 # get the indices of the single_letter_wchar_matrix that feature the n least common letters
                 outcome = single_letter_wchar_matrix[:, column_selector] > 0
                 outcome_indices = np.all(outcome > 0, axis=1)
-    
+
                 # these are now the ids
                 ls_wg_id_list = single_letter_word_group_id_list[outcome_indices]
-    
+
                 # the set of ids
                 ls_wg_id_set = set(ls_wg_id_list)
                 letter_selector_set_dict[ls_id] = ls_wg_id_set
-    
+
                 # subset the wchar_matrix to get the sub-matrix - this contains the N least common letters for a group of words
                 ls_wchar_matrix = wchar_matrix[ls_wg_id_list,]
                 letter_selector_matrix_dict[ls_id] = (
                     ls_wg_id_list,
-                    ls_wchar_matrix                
+                    ls_wchar_matrix
                 )
-                
+
             else:
                 # this is the submatrix by letter selector
                 ls_wg_id_list, ls_wchar_matrix = letter_selector_matrix_dict[
                     ls_id
                 ]
-    
+
                 ls_wg_id_set = letter_selector_set_dict[ls_id]
-    
+
             ####
             # MATRIX EXTRACTION OPTION 6: DICTIONARY BY NUMBER OF CHARACTERS AND LETTER SELECTOR
             ####
-    
+
             ##
             # We need to find the intersection of the word_group_id by number of characters
             # and the word_group_id by letter selector. The fastest way to do that
             # is to use the set().intersection() method. It blows other methods out of the water.
             # But...
-    
+
             # THERE IS A LOT OF OVERHEAD IN THIS PART - THE set() INTERSECTION AND THEN CONVERTING THE
             # RESULTING SET TO A NUMPY ARRAY. THIS TAKES ABOUT 33% OF THE TOTAL
             # RUNTIME OF THIS FUNCTION
             # LEAVING THESE SNIPPETS OF ALTERNATIVES IN FOR REFERENCE AND LEARNING
             ##
-    
+
             # 2024 02 05: USE np.intersect1d(): This is very slow
             # nc_ls_wg_id_list = np.intersect1d(ar1 = nc_wg_id_list, ar2=ls_wg_id_list, assume_unique=True)
-    
+
             # 2024 02 05: use a pandas join: This is very slow
             # df_ls = pd.DataFrame(data = ls_wg_id_list, columns = ['word_group_id'])
             # df_nc = pd.DataFrame(data = nc_wg_id_list, columns = ['word_group_id'])
             # df_out = pd.merge(left = df_ls, right = df_nc)
             # nc_ls_wg_id_set = None
             # nc_ls_wg_id_list = df_out['word_group_id'].to_numpy()
-    
+
             # 2024 02 06: user a collections.Counter(). This is also sloooooooow!
             # this_counter = collections.Counter(nc_wg_id_list)
             # this_counter.update(ls_wg_id_list)
@@ -276,41 +282,40 @@ def split_matrix(
             # outcome = this_array[:, 1] == 2
             # nc_ls_wg_id_list = this_array[outcome, 0]
             # nc_ls_wg_id_set = None
-    
+
             # This is the fastest implementation
             if matrix_extraction_option in (0, 6):
                 nc_ls_wg_id_set = nc_wg_id_set.intersection(ls_wg_id_set)
                 nc_ls_wg_id_list = np.fromiter(iter=nc_ls_wg_id_set, dtype=int)
-        
+
                 # now, get the rows
                 nc_ls_wchar_matrix = wchar_matrix[nc_ls_wg_id_list,]
                 nc_ls_matrix_dict[nc_ls_id] = (
                     nc_ls_wg_id_list,
-                    nc_ls_wchar_matrix                
+                    nc_ls_wchar_matrix
                 )
-                
-            # get the right loop count                    
+
+            # get the right loop count
             loop_count += 1
             if loop_count % 1000 == 0:
                 print("...{:,}".format(loop_count), "records enumerated...")
-        
+
         # display the final count
-        if matrix_extraction_option == 2:            
+        if matrix_extraction_option == 2:
             n_sub_matrices = len(n_char_matrix_dict)
 
-        if matrix_extraction_option in (3,4):
+        if matrix_extraction_option in (3, 4):
             n_sub_matrices = len(single_letter_matrix_dict)
 
         if matrix_extraction_option == 5:
             n_sub_matrices = len(letter_selector_matrix_dict)
 
-        if matrix_extraction_option in (0,6):
+        if matrix_extraction_option in (0, 6):
             n_sub_matrices = len(nc_ls_matrix_dict)
     else:
         n_sub_matrices = 0
 
-        
-    print("...{:,}".format(n_sub_matrices), "sub-matrices created...")        
+    print("...{:,}".format(n_sub_matrices), "sub-matrices created...")
     p_time = calc_time(time_start=s_time)
     print("Total extraction time:", p_time, "seconds.")
 
@@ -325,11 +330,11 @@ def split_matrix(
         # option 3 and 4
         single_letter_matrix_dict = None
 
-    if matrix_extraction_option not in (0,5):
+    if matrix_extraction_option not in (0, 5):
         # option 5
         letter_selector_matrix_dict = None
 
-    if matrix_extraction_option not in (0,6):
+    if matrix_extraction_option not in (0, 6):
         # option 6
         nc_ls_matrix_dict = None
 
@@ -342,22 +347,23 @@ def split_matrix(
         p_time
     )
 
-def test_matrix_extraction_option(wg_df:pd.DataFrame,
-                                  letter_dict:dict,
-                                  word_group_id_list:np.ndarray,
-                                  wchar_matrix:np.ndarray,
-                                  n_subset_letters:int):
+
+def test_matrix_extraction_option(wg_df: pd.DataFrame,
+                                  letter_dict: dict,
+                                  word_group_id_list: np.ndarray,
+                                  wchar_matrix: np.ndarray,
+                                  n_subset_letters: int):
 
     output_list = []
     for meo in range(0, 7):
         print('*** matrix extraction option:', meo, '***')
 
         wg_df, n_char_matrix_dict, single_letter_matrix_dict, letter_selector_matrix_dict, nc_ls_matrix_dict, p_time = split_matrix(
-            letter_dict = letter_dict,
-            word_group_id_list = word_group_id_list,
-                wg_df = wg_df,
-            wchar_matrix = wchar_matrix, 
-            n_subset_letters = n_subset_letters,
+            letter_dict=letter_dict,
+            word_group_id_list=word_group_id_list,
+            wg_df=wg_df,
+            wchar_matrix=wchar_matrix,
+            n_subset_letters=n_subset_letters,
             matrix_extraction_option=meo
         )
 
@@ -374,15 +380,16 @@ def test_matrix_extraction_option(wg_df:pd.DataFrame,
         if letter_selector_matrix_dict is None:
             letter_selector_matrix_dict_items = -1
         else:
-            letter_selector_matrix_dict_items = len(letter_selector_matrix_dict)
+            letter_selector_matrix_dict_items = len(
+                letter_selector_matrix_dict)
 
         if nc_ls_matrix_dict is None:
             nc_ls_matrix_dict_items = -1
         else:
             nc_ls_matrix_dict_items = len(nc_ls_matrix_dict)
-        
+
         temp_dict = {
-            'matrix_extraction_option':meo,            
+            'matrix_extraction_option': meo,
             'n_char_matrix_dict_type': str(type(n_char_matrix_dict)),
             'single_letter_matrix_dict_type': str(type(single_letter_matrix_dict)),
             'letter_selector_matrix_dict_type': str(type(letter_selector_matrix_dict)),
@@ -391,42 +398,47 @@ def test_matrix_extraction_option(wg_df:pd.DataFrame,
             'single_letter_matrix_dict_items': single_letter_matrix_dict_items,
             'letter_selector_matrix_dict_items': letter_selector_matrix_dict_items,
             'nc_ls_matrix_dict_items': nc_ls_matrix_dict_items,
-            'process_time':p_time
+            'process_time': p_time
         }
         output_list.append(temp_dict)
 
     # create an output dataframe
     output_df = pd.DataFrame(output_list)
-    
 
     return output_df
 
-def compute_lookups(wg_df:pd.DataFrame,
-                    n_char_matrix_dict:dict,
-                    single_letter_matrix_dict:dict,
-                    letter_selector_matrix_dict:dict,
-                    nc_ls_matrix_dict:dict,
-                   db_path:str,
-                   db_name:str):
-    
+
+def compute_lookups(wg_df: pd.DataFrame,
+                    n_char_matrix_dict: dict,
+                    single_letter_matrix_dict: dict,
+                    letter_selector_matrix_dict: dict,
+                    nc_ls_matrix_dict: dict,
+                    db_path: str,
+                    db_name: str):
+
     # time to count some stuff!
 
     # count the number of look ups for a single letter
-    n_char_lu_dict = {nc:nc_items[0].shape[0] for nc, nc_items in n_char_matrix_dict.items()}    
+    n_char_lu_dict = {nc: nc_items[0].shape[0]
+                      for nc, nc_items in n_char_matrix_dict.items()}
 
     # count the number of look ups
-    single_letter_lu_dict = {sl:sl_items[0].shape[0] for sl, sl_items in single_letter_matrix_dict.items()}
+    single_letter_lu_dict = {sl: sl_items[0].shape[0]
+                             for sl, sl_items in single_letter_matrix_dict.items()}
 
     # count the number of possible values for a given letter select
-    letter_selector_lu_dict = {ls:ls_items[0].shape[0] for ls, ls_items in letter_selector_matrix_dict.items()}
+    letter_selector_lu_dict = {ls: ls_items[0].shape[0]
+                               for ls, ls_items in letter_selector_matrix_dict.items()}
 
     # count the number of lookups
-    nc_ls_lu_dict = {nc_ls:nc_ls_items[0].shape[0] for nc_ls, nc_ls_items in nc_ls_matrix_dict.items()}          
+    nc_ls_lu_dict = {nc_ls: nc_ls_items[0].shape[0]
+                     for nc_ls, nc_ls_items in nc_ls_matrix_dict.items()}
 
-    col_names = ['word_id','word_group_id', 'n_chars','first_letter_id','single_letter_id','letter_selector_id','nc_ls_id']
-    
+    col_names = ['word_id', 'word_group_id', 'n_chars', 'first_letter_id',
+                 'single_letter_id', 'letter_selector_id', 'nc_ls_id']
+
     wg_lu_df = wg_df[col_names].copy()
-    
+
     # count the look-ups!
     # matrix extraction option 1
     wg_lu_df["me_01_full_matrix_lookup"] = wg_df.shape[0]
@@ -434,23 +446,22 @@ def compute_lookups(wg_df:pd.DataFrame,
     wg_lu_df["me_02_n_char_lookup"] = wg_lu_df["n_chars"].map(n_char_lu_dict)
     # matrix extraction option 3
     wg_lu_df["me_03_first_letter_lookup"] = wg_lu_df["first_letter_id"].map(
-    single_letter_lu_dict
+        single_letter_lu_dict
     )
     # matrix extraction option 4
     wg_lu_df["me_04_single_letter_lookup"] = wg_lu_df["single_letter_id"].map(
-    single_letter_lu_dict
+        single_letter_lu_dict
     )
     # matrix extraction option 5
     wg_lu_df["me_05_letter_selector_lookup"] = wg_lu_df["letter_selector_id"].map(
-    letter_selector_lu_dict
+        letter_selector_lu_dict
     )
     # matrix extraction option 6
     wg_lu_df["me_06_nc_ls_lookup"] = wg_lu_df["nc_ls_id"].map(nc_ls_lu_dict)
 
     # write this to disk
-    write_data_to_sqlite(df = wg_lu_df, table_name = 'word_group_lookup_counts',
-                     db_path = db_path, db_name = db_name)
-    
+    write_data_to_sqlite(df=wg_lu_df, table_name='word_group_lookup_counts',
+                         db_path=db_path, db_name=db_name)
 
     return wg_lu_df
 
@@ -477,8 +488,10 @@ def format_demo_output(demo_word: str, word_df: pd.DataFrame, demo_output: np.nd
     )
 
     # and those words are...
-    word_list = word_df.loc[word_df["word_group_id"].isin(demo_output[:, 0]), "lcase"]
-    print("There are", word_list.shape[0], "parent/from words for the word", demo_word)
+    word_list = word_df.loc[word_df["word_group_id"].isin(
+        demo_output[:, 0]), "lcase"]
+    print("There are", word_list.shape[0],
+          "parent/from words for the word", demo_word)
 
     print("The first five words are:")
     print(word_list.head())
@@ -515,7 +528,6 @@ def get_values_n_char(wg_id: int, n_char: int, n_char_matrix_dict: dict):
 
     nc_wg_id_list, nc_sub_wchar_matrix = n_char_matrix_dict[n_char]
     new_word_id = nc_wg_id_list == wg_id
-  
 
     # perform the comparison
     outcome = nc_sub_wchar_matrix - nc_sub_wchar_matrix[new_word_id,]
@@ -540,13 +552,14 @@ def get_values_single_letter(
     # matrix extraction option 3 and 4
     (
         single_letter_word_group_id_list,
-        single_letter_wchar_matrix        
+        single_letter_wchar_matrix
     ) = single_letter_matrix_dict[single_letter_id]
 
     new_word_id = single_letter_word_group_id_list == wg_id
 
     # now, peform the comparison
-    outcome = single_letter_wchar_matrix - single_letter_wchar_matrix[new_word_id,]
+    outcome = single_letter_wchar_matrix - \
+        single_letter_wchar_matrix[new_word_id,]
 
     # compute the score by finding where rows, across all columns, are GTE 0
     outcome_indices = np.all(outcome >= 0, axis=1)
@@ -622,13 +635,14 @@ def estimate_total_pairs(wg_df: pd.DataFrame, letter_selector_matrix_dict: dict)
 
     # sample 10 words from each word based on word length.
     # words are anywhere from 1 character to 24 characters, 240 samples
-    sample_df = wg_df.groupby(["n_chars"]).sample(n=10, replace=True, random_state=123)
+    sample_df = wg_df.groupby(["n_chars"]).sample(
+        n=10, replace=True, random_state=123)
 
     # enumerate using itertuples in order to capture the output
     output_list = []
     for row in sample_df.itertuples():
         # get the values using the get_values_n_char_letter_selector() function.
-        output = get_values_letter_selector (
+        output = get_values_letter_selector(
             wg_id=row.word_group_id,
             letter_selector_id=row.letter_selector_id,
             letter_selector_matrix_dict=letter_selector_matrix_dict,
@@ -639,7 +653,8 @@ def estimate_total_pairs(wg_df: pd.DataFrame, letter_selector_matrix_dict: dict)
         output_list.append(curr_output)
 
     # make a dataframe from the sample possibilities
-    pos_df = pd.DataFrame(data=output_list, columns=["n_chars", "n_from_words"])
+    pos_df = pd.DataFrame(data=output_list, columns=[
+                          "n_chars", "n_from_words"])
 
     # minimum, maximum, and mean number of from words
     agg_pos_df = (
@@ -668,7 +683,8 @@ def estimate_total_pairs(wg_df: pd.DataFrame, letter_selector_matrix_dict: dict)
     # set the upper bound of anagrams as the midway point
     # between the mean and the max of the estimated number of anagrams
     n_possible_anagrams = (
-        agg_pos_df["n_tot_mean_anagrams"].sum() + agg_pos_df["n_tot_max_anagrams"].sum()
+        agg_pos_df["n_tot_mean_anagrams"].sum(
+        ) + agg_pos_df["n_tot_max_anagrams"].sum()
     ) / 2
 
     # round and convert to integer
@@ -683,12 +699,13 @@ def estimate_total_pairs(wg_df: pd.DataFrame, letter_selector_matrix_dict: dict)
     return n_possible_anagrams, agg_pos_df
 
 
-def load_possible_anagrams(db_path:str, db_name:str) -> pd.DataFrame:
+def load_possible_anagrams(db_path: str, db_name: str) -> pd.DataFrame:
 
     sql = 'select * from n_possible_anagrams;'
-    agg_pos_df = query_db(sql = sql, db_path = db_path, db_name = db_name)
+    agg_pos_df = query_db(sql=sql, db_path=db_path, db_name=db_name)
     n_possible_anagrams = (
-        agg_pos_df["n_tot_mean_anagrams"].sum() + agg_pos_df["n_tot_max_anagrams"].sum()
+        agg_pos_df["n_tot_mean_anagrams"].sum(
+        ) + agg_pos_df["n_tot_max_anagrams"].sum()
     ) / 2
 
     # round and convert to integer
@@ -696,41 +713,42 @@ def load_possible_anagrams(db_path:str, db_name:str) -> pd.DataFrame:
 
     return n_possible_anagrams
 
-    
-
 
 ####
 # generate_from_to_word_group_pairs placeholder
 ####
 def generate_from_to_word_group_pairs_simple(
-    wg_df: pd.DataFrame,    
+    wg_df: pd.DataFrame,
     n_possible_anagrams: int,
     matrix_extraction_option: int,
-    wchar_matrix:np.ndarray,
-    word_group_id_list:np.ndarray,
-    n_char_matrix_dict:dict,
-    single_letter_matrix_dict:dict,
-    letter_selector_matrix_dict:dict,
-    nc_ls_matrix_dict:dict,
-    letter_subset_list:str = None
-):    
-    
+    wchar_matrix: np.ndarray,
+    word_group_id_list: np.ndarray,
+    n_char_matrix_dict: dict,
+    single_letter_matrix_dict: dict,
+    letter_selector_matrix_dict: dict,
+    nc_ls_matrix_dict: dict,
+    letter_subset_list: str = None
+):
+
     # use numpy to pre-allocate an array that will be updated while enumerating.
     # this eliminates list.append() calls which are fine in small amounts, but
     # hundreds of thousands of append calls are very slow.
 
-    output_list = np.full(shape=(n_possible_anagrams, 2), fill_value=-1, dtype=int)    
+    output_list = np.full(shape=(n_possible_anagrams, 2),
+                          fill_value=-1, dtype=int)
 
     # this dictionary will store the calculations for each word
     proc_time_dict = {}
-    
+
     if letter_subset_list == 'SAMPLE':
         # generate 100 samples within each n_chars and first_letter group combination
-        curr_wg_df = wg_df.groupby(['n_chars', 'first_letter']).sample(n = 100, replace = True, random_state = 123).drop_duplicates()
-    elif isinstance(letter_subset_list, str) or isinstance(letter_subset_list, list):        
+        curr_wg_df = wg_df.groupby(['n_chars', 'first_letter']).sample(
+            n=100, replace=True, random_state=123).drop_duplicates()
+    elif isinstance(letter_subset_list, str) or isinstance(letter_subset_list, list):
         # subset by a specific set of letters or a single letter
-        curr_wg_df = wg_df.loc[wg_df['first_letter'].isin(set(letter_subset_list)), :].copy()                  
-    else:    
+        curr_wg_df = wg_df.loc[wg_df['first_letter'].isin(
+            set(letter_subset_list)), :].copy()
+    else:
         curr_wg_df = wg_df.copy()
 
     # display counts
@@ -752,8 +770,8 @@ def generate_from_to_word_group_pairs_simple(
         s_time = perf_counter_ns()
 
         # word group id
-        wg_id = row.word_group_id        
-        
+        wg_id = row.word_group_id
+
         if matrix_extraction_option == 1:
             # option 1: full matrix
             outcome_word_id_list = get_values_full_matrix(
@@ -817,7 +835,8 @@ def generate_from_to_word_group_pairs_simple(
             # enumerate the from/parent words
             new_anagram_pair_count = anagram_pair_count + n_from_words
 
-            output_list[anagram_pair_count:new_anagram_pair_count, :] = outcome_word_id_list
+            output_list[anagram_pair_count:new_anagram_pair_count,
+                        :] = outcome_word_id_list
 
             # set the anagram pair count
             anagram_pair_count = new_anagram_pair_count
@@ -825,17 +844,18 @@ def generate_from_to_word_group_pairs_simple(
         # delete the intermediate list
         del outcome_word_id_list
 
-        # record the time for the word        
+        # record the time for the word
         p_time = calc_time(time_start=s_time, round_digits=-1)
-        
+
         proc_time_dict[wg_id] = (p_time, n_from_words)
 
         row_count += 1
         if row_count % 1e4 == 0:
-            print('...found parent anagrams for', "{:,}".format(row_count), 'words...')        
+            print('...found parent anagrams for',
+                  "{:,}".format(row_count), 'words...')
 
     # last update
-    print('...found parent anagrams for', "{:,}".format(row_count), 'words...')        
+    print('...found parent anagrams for', "{:,}".format(row_count), 'words...')
     # create a dataframe from the proc_time_dict
     proc_time_df = pd.DataFrame.from_dict(data=proc_time_dict, orient="index")
     proc_time_df = proc_time_df.reset_index()
@@ -851,7 +871,7 @@ def generate_from_to_word_group_pairs_simple(
         total_proc_time_s,
         "seconds |",
         total_proc_time_m,
-        "minutes..."        
+        "minutes..."
     )
 
     # truncate the output array to only include rows with a from/to word pair
@@ -870,14 +890,13 @@ def generate_from_to_word_group_pairs_simple(
     # to-words from each from-word. So, this is the number of child words
     # from each parent word.
     # https://docs.python.org/3/library/collections.html#collections.Counter
-    
 
     # we do not need the count of from-word, but leaving in for convenience
     # print("...populating the count of from-words...")
     # n_from_word_counter = collections.Counter(output_list[:, 1])
 
     print("...populating the count of to-words...")
-    n_to_word_counter = collections.Counter(output_list[:, 0])    
+    n_to_word_counter = collections.Counter(output_list[:, 0])
 
     # now, use the map function to get the number of from/to words and the number of
     # candidate words for each word
@@ -887,13 +906,14 @@ def generate_from_to_word_group_pairs_simple(
 
     # record the matrix extraction option
     proc_time_df['matrix_extraction_option'] = matrix_extraction_option
-    
+
     # how many anagram pairs were found?
     n_total_anagrams = output_list.shape[0]
     n_total_anagrams_formatted = "{:,}".format(n_total_anagrams)
     print("...total anagram pairs:", n_total_anagrams_formatted)
 
     return proc_time_df, output_list
+
 
 def store_anagram_pairs(
     output_list: np.array, db_path: str, db_name: str, cut_size: int = 1000000
@@ -985,7 +1005,8 @@ def store_anagram_pairs(
             curr_db_write_time_start = datetime.datetime.now()
 
     # commit the last round of changes
-    print("...committing changes:", "{:,}".format(len(curr_output_list)), "records")
+    print("...committing changes:", "{:,}".format(
+        len(curr_output_list)), "records")
     db_conn.commit()
 
     # compute total write times
@@ -1003,23 +1024,24 @@ def store_anagram_pairs(
 
     return None
 
+
 def store_anagram_processing(
-    proc_time_df: str,    
+    proc_time_df: str,
     matrix_extraction_option: str,
     db_path: str,
     db_name: str,
 ) -> None:
-    
+
     # create database connection objects
     db_conn = build_db_conn(db_path=db_path, db_name=db_name)
 
     # write the processing option table
     table_name = f"words_me_{str(matrix_extraction_option).zfill(2)}"
-    write_data_to_sqlite(df = proc_time_df,
+    write_data_to_sqlite(df=proc_time_df,
                          table_name=table_name,
                          db_path=db_path,
                          db_name=db_name)
-    
+
     # close the connection
     db_conn.close()
 
@@ -1043,14 +1065,16 @@ def display_total_processing_time(
         "minutes",
     )
 
-    # record the total time    
-    total_time_seconds = calc_time(time_start=total_time_start, round_digits=-1)    
+    # record the total time
+    total_time_seconds = calc_time(
+        time_start=total_time_start, round_digits=-1)
     total_time_minutes = total_time_seconds / 60
     # round for display
-    total_time_seconds = round(total_time_seconds, 2)    
+    total_time_seconds = round(total_time_seconds, 2)
     total_time_minutes = round(total_time_minutes, 2)
 
-    print("...total processing time:", total_time_seconds, "seconds |",  total_time_minutes, "minutes")
+    print("...total processing time:", total_time_seconds,
+          "seconds |",  total_time_minutes, "minutes")
 
     return None
 
