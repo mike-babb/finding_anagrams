@@ -61,7 +61,7 @@ def load_input_data(db_path: str, db_name: str, in_file_path: str) -> pd.DataFra
 
 
 ####
-# SPLIT MATRIX PLACEHOLDER
+# SPLIT MATRIX
 ####
 
 
@@ -92,7 +92,7 @@ def split_matrix(
     wg_df["single_letter_id"] = wg_df["letter_selector"].str[0].map(
         letter_dict)
 
-    # build the letter selector id
+    # build the letter selector id list and dict
     letter_selector_list = wg_df["letter_selector"].unique()
     letter_selector_list.sort()
     letter_selector_id_dict = {ls: i_ls for i_ls,
@@ -173,7 +173,7 @@ def split_matrix(
 
                 n_char_matrix_dict[nc] = (nc_wg_id_list, nc_sub_wchar_matrix)
 
-            else:
+            else:                
                 nc_wg_id_list, nc_sub_wchar_matrix = n_char_matrix_dict[nc]
                 nc_wg_id_set = n_char_set_dict[nc]
 
@@ -207,7 +207,7 @@ def split_matrix(
                 )
 
             else:
-                # query the sub-matrices split by individual letter to then get the smaller partitions
+                # query the sub-matrices split by individual letter to then get the smaller matrices
                 (
                     single_letter_word_group_id_list,
                     single_letter_wchar_matrix,
@@ -275,7 +275,7 @@ def split_matrix(
             # nc_ls_wg_id_set = None
             # nc_ls_wg_id_list = df_out['word_group_id'].to_numpy()
 
-            # 2024 02 06: user a collections.Counter(). This is also sloooooooow!
+            # 2024 02 06: use a collections.Counter(). This is also sloooooooow!
             # this_counter = collections.Counter(nc_wg_id_list)
             # this_counter.update(ls_wg_id_list)
             # this_array = np.array(list(this_counter.items()))
@@ -412,9 +412,7 @@ def compute_lookups(wg_df: pd.DataFrame,
                     n_char_matrix_dict: dict,
                     single_letter_matrix_dict: dict,
                     letter_selector_matrix_dict: dict,
-                    nc_ls_matrix_dict: dict,
-                    db_path: str,
-                    db_name: str):
+                    nc_ls_matrix_dict: dict):
 
     # time to count some stuff!
 
@@ -457,11 +455,7 @@ def compute_lookups(wg_df: pd.DataFrame,
         letter_selector_lu_dict
     )
     # matrix extraction option 6
-    wg_lu_df["me_06_nc_ls_lookup"] = wg_lu_df["nc_ls_id"].map(nc_ls_lu_dict)
-
-    # write this to disk
-    write_data_to_sqlite(df=wg_lu_df, table_name='word_group_lookup_counts',
-                         db_path=db_path, db_name=db_name)
+    wg_lu_df["me_06_nc_ls_lookup"] = wg_lu_df["nc_ls_id"].map(nc_ls_lu_dict)    
 
     return wg_lu_df
 

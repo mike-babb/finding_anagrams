@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Mike Babb
-# # babbm@uw.edu
+# # babb.mike@outlook.com
 # # Find anagrams
 # ## Part 2a: Demonstrate extraction timing techniques
 
@@ -22,16 +22,15 @@ import _run_constants as rc
 from part_00_file_db_utils import *
 from part_00_process_functions import *
 
-    
 
-def demo_extraction_techniques(word_df:pd.DataFrame, wg_df:pd.DataFrame,
-                               wchar_matrix:np.ndarray, word_group_id_list:np.ndarray,
-                               n_char_matrix_dict:dict,
-                               single_letter_matrix_dict:dict, 
-                               letter_selector_matrix_dict:dict, nc_ls_matrix_dict:dict, 
-                               demo_word:str = 'achiever',
-                               n_trials:int = 100 ):
-    
+def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
+                               wchar_matrix: np.ndarray, word_group_id_list: np.ndarray,
+                               n_char_matrix_dict: dict,
+                               single_letter_matrix_dict: dict,
+                               letter_selector_matrix_dict: dict, nc_ls_matrix_dict: dict,
+                               demo_word: str = 'achiever',
+                               n_trials: int = 100):
+
     wg_id = word_df.loc[word_df['lcase'] == demo_word, 'word_group_id'].iloc[0]
 
     demo_wg_df = wg_df.loc[wg_df['word_group_id'] == wg_id, :]
@@ -125,7 +124,7 @@ def demo_extraction_techniques(word_df:pd.DataFrame, wg_df:pd.DataFrame,
     format_demo_output(demo_word=demo_word,
                        word_df=word_df,
                        demo_output=output)
-    
+
     # we've tested with one word, let's time many evaluations to get a sense of how quickly
     # the different matrix extraction options work
     # use the timeit() function to evaluate how long, on average, a single operation
@@ -133,7 +132,6 @@ def demo_extraction_techniques(word_df:pd.DataFrame, wg_df:pd.DataFrame,
     # we do this by writing python code encapsulated in quotes which is then sent to the function
     # we can store the quoted code in a dictionary and then enumerate.
     # we'll run each code chunk 100 times and then compute the average
-
 
     code_snippet_dict = {
         'Matrix Selection Option 1: Selecting by full matrix':
@@ -150,11 +148,28 @@ def demo_extraction_techniques(word_df:pd.DataFrame, wg_df:pd.DataFrame,
         """get_values_n_char_letter_selector(wg_id = wg_id, nc_ls_id = nc_ls_id, nc_ls_matrix_dict=nc_ls_matrix_dict)"""
     }
 
+    item_dictionary = {'wg_id': wg_id, 'wchar_matrix': wchar_matrix,
+                       'word_group_id_list': word_group_id_list, 'n_char': n_char,
+                       'n_char_matrix_dict': n_char_matrix_dict,                       
+                       'first_letter_id': first_letter_id,
+                       'single_letter_id': single_letter_id,
+                       'single_letter_matrix_dict': single_letter_matrix_dict,
+                       'letter_selector_id': letter_selector_id,
+                       'letter_selector_matrix_dict': letter_selector_matrix_dict,
+                       'nc_ls_id': nc_ls_id, 'nc_ls_matrix_dict': nc_ls_matrix_dict}
+
+    setup_statement = 'from part_00_process_functions import ' \
+        'get_values_full_matrix, get_values_n_char, get_values_single_letter, ' \
+        'get_values_letter_selector, get_values_n_char_letter_selector, ' \
+        'format_output_list'
+
     timing_list = []
     for csd, cs in code_snippet_dict.items():
+        print(csd)
 
         # here we time the code execution
-        total_time = timeit.timeit(cs, number=n_trials, globals=None)
+        total_time = timeit.timeit(
+            stmt=cs, number=n_trials, setup=setup_statement, globals=item_dictionary)
         timing_list.append([csd, total_time])
 
         # total time
@@ -164,7 +179,6 @@ def demo_extraction_techniques(word_df:pd.DataFrame, wg_df:pd.DataFrame,
         avg_time = total_time / n_trials
         avg_time_formatted = '{:,}'.format(round(avg_time, 2))
 
-        print(csd)
         # average number of seconds per trial
         print('Total time:', total_time_formatted,
               'seconds. Average time:', avg_time_formatted, 'seconds.')
@@ -229,8 +243,8 @@ def demo_extraction_techniques(word_df:pd.DataFrame, wg_df:pd.DataFrame,
     return timing_list
 
 
-def run_it(db_path:str, db_name:str, in_file_path:str, 
-           data_output_file_path, n_subset_letters:str, demo_word: str = 'achiever'):
+def run_it(db_path: str, db_name: str, data_output_file_path,
+           n_subset_letters: str, demo_word: str = 'achiever'):
 
     ####
     # LOAD THE INPUT DATA
@@ -269,7 +283,7 @@ def run_it(db_path:str, db_name:str, in_file_path:str,
                          db_path=db_path, db_name=db_name)
 
     ####
-    # EXTRACT ALL MATRIX EXTRACTION OPTIONS
+    # CREATE ALL MATRIX EXTRACTION OPTIONS
     ####
     # Leaving the matrix extracton blank defaults to option 0: prepare all outputs
     wg_df, n_char_matrix_dict, single_letter_matrix_dict, letter_selector_matrix_dict, nc_ls_matrix_dict, p_time = split_matrix(
@@ -280,12 +294,12 @@ def run_it(db_path:str, db_name:str, in_file_path:str,
         n_subset_letters=n_subset_letters
     )
     # demonstrate the different matrix extraction techniques using the word 'achiever'
-    demo_extraction_techniques(word_df=word_df,wg_df=wg_df,wchar_matrix=wchar_matrix,
-                               word_group_id_list=word_group_id_list,n_char_matrix_dict=n_char_matrix_dict,
+    demo_extraction_techniques(word_df=word_df, wg_df=wg_df, wchar_matrix=wchar_matrix,
+                               word_group_id_list=word_group_id_list, n_char_matrix_dict=n_char_matrix_dict,
                                single_letter_matrix_dict=single_letter_matrix_dict,
                                letter_selector_matrix_dict=letter_selector_matrix_dict,
-                               nc_ls_matrix_dict=nc_ls_matrix_dict)
-    
+                               nc_ls_matrix_dict=nc_ls_matrix_dict,demo_word=demo_word)
+
     ####
     # Compute the search space for each matrix extraction option.
     ####
@@ -299,8 +313,11 @@ def run_it(db_path:str, db_name:str, in_file_path:str,
                                n_char_matrix_dict=n_char_matrix_dict,
                                single_letter_matrix_dict=single_letter_matrix_dict,
                                letter_selector_matrix_dict=letter_selector_matrix_dict,
-                               nc_ls_matrix_dict=nc_ls_matrix_dict,
-                               db_path=db_path, db_name=db_name)
+                               nc_ls_matrix_dict=nc_ls_matrix_dict)
+    
+    # write this to disk
+    write_data_to_sqlite(df=wg_lu_df, table_name='word_group_lookup_counts',
+                         db_path=db_path, db_name=db_name)
 
     ####
     # Esimate total number of pairs
@@ -327,7 +344,7 @@ def run_it(db_path:str, db_name:str, in_file_path:str,
 if __name__ == "__main__":
 
     run_it(db_path=rc.db_path, db_name=rc.db_name,
-           in_file_path=rc.in_file_path, data_output_file_path=rc.data_output_file_path,
+           data_output_file_path=rc.data_output_file_path,
            n_subset_letters=3)
 
     # wow. So, based on this analysis of the different

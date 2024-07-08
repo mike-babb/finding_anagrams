@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 # Mike Babb
-# babbm@uw.edu
+# babb.mike@outlook.com
 # Find Anagrams
 
 # Part 1: Structure the data
