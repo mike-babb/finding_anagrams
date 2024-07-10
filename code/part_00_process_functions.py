@@ -758,6 +758,7 @@ def generate_from_to_word_group_pairs_simple(
     # establish counters for record keeping
     row_count = 0
     anagram_pair_count = 0
+    intmerdiate_to_word_count = collections.Counter()
     # enumerate by word id, working with integers is faster than words
     for row in curr_wg_df.itertuples(index=False):
         # start timing to record processing for each word
@@ -831,6 +832,11 @@ def generate_from_to_word_group_pairs_simple(
 
             output_list[anagram_pair_count:new_anagram_pair_count,
                         :] = outcome_word_id_list
+            
+
+            #n_to_word_counter = collections.Counter(output_list[:, 0])
+            intmerdiate_to_word_count.update(outcome_word_id_list[:, 0])
+
 
             # set the anagram pair count
             anagram_pair_count = new_anagram_pair_count
@@ -890,12 +896,16 @@ def generate_from_to_word_group_pairs_simple(
     # n_from_word_counter = collections.Counter(output_list[:, 1])
 
     print("...populating the count of to-words...")
-    n_to_word_counter = collections.Counter(output_list[:, 0])
+    #big_count_start_time = perf_counter_ns()
+    #n_to_word_counter = collections.Counter(output_list[:, 0])
+    #print(calc_time(time_start = big_count_start_time))
+    #outcome_test = intmerdiate_to_word_count == n_to_word_counter
+    #print(outcome_test)
 
     # now, use the map function to get the number of from/to words and the number of
     # candidate words for each word
     proc_time_df["n_to_word_groups"] = proc_time_df["word_group_id"].map(
-        n_to_word_counter
+        intmerdiate_to_word_count
     )
 
     # record the matrix extraction option
