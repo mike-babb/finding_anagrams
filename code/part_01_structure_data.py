@@ -296,7 +296,7 @@ def save_objects(
     return None
 
 
-def run_it(
+def run_part_01(
     in_file_path: str, in_file_name: str, base_output_file_path: str, db_name: str
 ):
     # construct the input file path
@@ -335,9 +335,8 @@ def run_it(
         db_name=db_name,
     )
 
-
 if __name__ == "__main__":    
-    run_it(
+    run_part_01(
         in_file_path=rc.in_file_path,
         in_file_name=rc.in_file_name,
         base_output_file_path=rc.base_output_file_path,

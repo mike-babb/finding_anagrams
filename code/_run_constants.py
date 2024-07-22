@@ -18,6 +18,8 @@ in_file_name = "words.txt"
 base_output_file_path = "/project/finding_anagrams"
 data_output_file_path = os.path.join(base_output_file_path, 'data')
 tabulation_output_file_path = os.path.join(base_output_file_path, 'tabulations')
+# words
+word_output_file_path = os.path.join(base_output_file_path, 'words')
 
 # database name
 db_path = data_output_file_path
