@@ -243,7 +243,7 @@ def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
     return timing_list
 
 
-def run_it(db_path: str, db_name: str, data_output_file_path,
+def run_part_02a(db_path: str, db_name: str, data_output_file_path,
            n_subset_letters: str, demo_word: str = 'achiever'):
 
     ####
@@ -343,7 +343,7 @@ def run_it(db_path: str, db_name: str, data_output_file_path,
 
 if __name__ == "__main__":
 
-    run_it(db_path=rc.db_path, db_name=rc.db_name,
+    run_part_02a(db_path=rc.db_path, db_name=rc.db_name,
            data_output_file_path=rc.data_output_file_path,
            n_subset_letters=3)
 

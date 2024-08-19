@@ -13,10 +13,12 @@ import numpy as np
 import pandas as pd
 
 # custom
+import _run_constants as rc
 from part_00_file_db_utils import *
 
 
-def load_input_data(db_path: str, db_name: str, in_file_path: str) -> pd.DataFrame:
+
+def load_input_data(data_path: str = rc.data_output_file_path, db_path = rc.db_path, db_name: str = rc.db_name, in_file_path: str = rc.in_file_path) -> pd.DataFrame:
 
     # load the word_df, the words from Part 1
     print("...loading words into a dataframe...")
@@ -32,12 +34,12 @@ def load_input_data(db_path: str, db_name: str, in_file_path: str) -> pd.DataFra
     print("...loading the letter dictionary...")
     in_file_name = "letter_dict.pkl"
     letter_dict = load_pickle(
-        in_file_path=in_file_path, in_file_name=in_file_name)
+        in_file_path=data_path, in_file_name=in_file_name)
 
     # load the char matrix from part 1
     print("...loading the char matrix...")
     in_file_name = "char_matrix.npy"
-    ipn = os.path.join(in_file_path, in_file_name)
+    ipn = os.path.join(data_path, in_file_name)
     char_matrix = np.load(file=ipn)
 
     # get the word group ids
