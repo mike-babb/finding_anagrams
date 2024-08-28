@@ -8,10 +8,10 @@
 - Uses words
 - deleted
 
-# part_02b_demonstrate_extraction_timing_techniques.ipynb
+# part_03_demonstrate_extraction_timing_techniques.ipynb
 - needs a timing script
 
-# part_02b_generate_and_store_anagrams_v2.0.ipynb
+# part_03_generate_and_store_anagrams_v2.0.ipynb
 - Uses word groups
 - options 1 through 4:
 - This is code complete
@@ -68,11 +68,11 @@ Option 6: word-length and n least common letters
 part_01_structure_data_v2.0.ipynb
 part_01_structure_data_v2.0.py
 
-part_02a_demonstrate_extraction_timing_techniques.ipynb
-part_02a_demonstrate_extraction_timing_techniques_for_export.ipynb
+part_02_demonstrate_extraction_timing_techniques.ipynb
+part_02_demonstrate_extraction_timing_techniques_for_export.ipynb
 
 ## TRANSFORM AND LOAD
-part_02b_generate_and_store_anagrams_v2.0.ipynb
+part_03_generate_and_store_anagrams_v2.0.ipynb
 
 ## QUERY
 part_03_query_anagram_database_v2.0.ipynb
@@ -96,3 +96,7 @@ call graph demo
 
 # 2024 06 12
 Update the paths to load the run constants
+
+# 2024 08 27
+Deleted redundant/extraneous files
+Currently renaming files.

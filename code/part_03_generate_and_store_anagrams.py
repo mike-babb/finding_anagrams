@@ -26,7 +26,7 @@ from part_00_file_db_utils import *
 from part_00_process_functions import *
 
 
-def run_part_02b(matrix_extraction_option: int, n_subset_letters: int, write_data: bool, letter_subset_list:None,
+def run_part_03(matrix_extraction_option: int, n_subset_letters: int, write_data: bool, letter_subset_list:None,
            db_path: str, db_name: str, in_file_path: str):
 
     # start a timer to record the entire operation
@@ -112,5 +112,5 @@ if __name__ == '__main__':
     # letter_subset_list = 'SAMPLE'
     letter_subset_list = None
 
-    run_part_02b(matrix_extraction_option=matrix_extraction_option, n_subset_letters=n_subset_letters, letter_subset_list = letter_subset_list,
+    run_part_03(matrix_extraction_option=matrix_extraction_option, n_subset_letters=n_subset_letters, letter_subset_list = letter_subset_list,
            write_data=write_data, db_path=rc.db_path, db_name=rc.db_name, in_file_path=rc.in_file_path)
