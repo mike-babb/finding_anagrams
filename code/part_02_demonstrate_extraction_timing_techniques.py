@@ -276,7 +276,7 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
                                                wchar_matrix=wchar_matrix,
                                                n_subset_letters=n_subset_letters)
 
-    print(mat_ext_df.head(n=7))
+    #print(mat_ext_df.head(n=7))
 
     # save to sqlite for future reference
     write_data_to_sqlite(df=mat_ext_df, table_name='matrix_extraction_technique_timing',
