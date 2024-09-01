@@ -279,7 +279,7 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
     #print(mat_ext_df.head(n=7))
 
     # save to sqlite for future reference
-    write_data_to_sqlite(df=mat_ext_df, table_name='matrix_extraction_technique_timing',
+    write_data_to_sqlite(df=mat_ext_df, table_name='matrix_extraction_techniques',
                          db_path=db_path, db_name=db_name)
 
     ####
