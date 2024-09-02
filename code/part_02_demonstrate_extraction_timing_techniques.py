@@ -1,23 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# # Mike Babb
-# # babb.mike@outlook.com
-# # Find anagrams
-# ## Part 2: Demonstrate extraction timing techniques
+# Mike Babb
+# babb.mike@outlook.com
+# Find Anagrams: Part 2: Demonstrate extraction timing techniques
 
 
-# standard libraries - installed by default
+# standard libraries
 from itertools import product
 import timeit
 
-
-# external libraries - not installed by default
+# external libraries
 import numpy as np
 import pandas as pd
 
-
-# custom, user-defined functions
+# custom libraries
 import _run_constants as rc
 from part_00_file_db_utils import *
 from part_00_process_functions import *
@@ -150,7 +146,7 @@ def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
 
     item_dictionary = {'wg_id': wg_id, 'wchar_matrix': wchar_matrix,
                        'word_group_id_list': word_group_id_list, 'n_char': n_char,
-                       'n_char_matrix_dict': n_char_matrix_dict,                       
+                       'n_char_matrix_dict': n_char_matrix_dict,
                        'first_letter_id': first_letter_id,
                        'single_letter_id': single_letter_id,
                        'single_letter_matrix_dict': single_letter_matrix_dict,
@@ -244,7 +240,7 @@ def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
 
 
 def run_part_02(db_path: str, db_name: str, data_output_file_path,
-           n_subset_letters: str, demo_word: str = 'achiever'):
+                n_subset_letters: str, demo_word: str = 'achiever'):
 
     ####
     # LOAD THE INPUT DATA
@@ -276,7 +272,7 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
                                                wchar_matrix=wchar_matrix,
                                                n_subset_letters=n_subset_letters)
 
-    #print(mat_ext_df.head(n=7))
+    # print(mat_ext_df.head(n=7))
 
     # save to sqlite for future reference
     write_data_to_sqlite(df=mat_ext_df, table_name='matrix_extraction_techniques',
@@ -298,7 +294,7 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
                                word_group_id_list=word_group_id_list, n_char_matrix_dict=n_char_matrix_dict,
                                single_letter_matrix_dict=single_letter_matrix_dict,
                                letter_selector_matrix_dict=letter_selector_matrix_dict,
-                               nc_ls_matrix_dict=nc_ls_matrix_dict,demo_word=demo_word)
+                               nc_ls_matrix_dict=nc_ls_matrix_dict, demo_word=demo_word)
 
     ####
     # Compute the search space for each matrix extraction option.
@@ -314,7 +310,7 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
                                single_letter_matrix_dict=single_letter_matrix_dict,
                                letter_selector_matrix_dict=letter_selector_matrix_dict,
                                nc_ls_matrix_dict=nc_ls_matrix_dict)
-    
+
     # write this to disk
     write_data_to_sqlite(df=wg_lu_df, table_name='word_group_lookup_counts',
                          db_path=db_path, db_name=db_name)
@@ -343,12 +339,17 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
 
 if __name__ == "__main__":
 
+    # start a timer to record the entire operation
+    total_time_start = perf_counter_ns()
+
     run_part_02(db_path=rc.db_path, db_name=rc.db_name,
-           data_output_file_path=rc.data_output_file_path,
-           n_subset_letters=3)
+                data_output_file_path=rc.data_output_file_path,
+                n_subset_letters=3)
+
+    compute_total_time(total_time_start=total_time_start)
 
     # wow. So, based on this analysis of the different
     # matrix extraction options using the word 'achiever':
     # options 5 and 6 are the fastest, each over 100 times faster than option 1
     # option 4 - just using the single least common letter - is 10X faster than option 1
-    # and 6X faster than option 3 - using the starting the letter of the word.
+    # and 6X faster than option 3 - using the starting letter of the word.

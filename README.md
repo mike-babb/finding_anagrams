@@ -1,5 +1,5 @@
 # Finding Anagrams: v2.0
-# September 1, 2024
+# September 2, 2024
 Find and store from/to word relationships using Python, NumPy, Pandas, and SQLite
 
 # Introduction
@@ -12,17 +12,14 @@ This workshop was built for beginners - people very new to python - and progress
 Where applicable, there are Jupyter Notebooks and python scripts that demonstrate the same process flow. The notebooks are more interactive while the python scripts can be run from the command line. In general, the notebooks and scripts start out less complex and become more complex. For example, part_01 features more interactivity (calls to `print` and `pd.DataFrame.head()`) and descriptions of operations and objects(dictionaries and matrices, for example) than part_03. Each part builds upon the previous part(s). 
 
 ## SETUP
-0. _run_constants.py - Input and output file names and paths. All subsequent scripts reference the
-paths defined in this file. Paths and names only need to be set on
-1. part_00_file_db_utils.py - Code reuse for parts 1 through 7. These are mostly I/O functions and utility functions.
-2. part_00_process_functions.py - Code reuse for parts 1 through 7. These functions peform the data processing and are called 
+0. _run_constants.py - Input and output file names and paths. All subsequent scripts reference the paths defined in this file. Paths and names only need to be set once, in this file. 
+1. part_00_file_db_utils.py - Code reuse for parts 1 through 7. These are mostly I/O and utility functions.
+2. part_00_process_functions.py - Code reuse for parts 1 through 7. These functions peform the data processing and are called in subsequent parts. The reason for this structure is for code reuse, efficient optimization and debugging, and generally writing less code. Effectively, we can efine the function once and import it.
 
 
+## EXTRACT
 
-Several functions are called in multiple scripts. Define the function once and import it.
 
-
-## EXTRACTd
 
 0. part_00_process_functions.py
 1. part_01_generate_char_matrix_v1.0.ipynb - load a list of words, perform several calculations and data creation steps, and store the results.
@@ -46,18 +43,24 @@ Processing Technique 4: Create sub-matrices split by word-length and presence of
 12. part_06_visualize_processing_time_v2.0.R - Use R to connect to a SQLite db, query data, and plot data. Limits the visualization to only examine words unique word groups.
 
 
+_run_constants.py
+part_00_file_db_utils.py
+part_00_process_functions.py
 
 part_01_structure_data.ipynb
 part_01_structure_data.py*
+
 part_02_demonstrate_extraction_timing_techniques.ipynb
 part_02_demonstrate_extraction_timing_techniques.py*
+
 part_03_generate_and_store_anagrams.ipynb
 part_03_generate_and_store_anagrams.py*
+
 part_04_query_anagram_database.ipynb
 part_05_add_database_indices.ipynb
 part_06_build_a_graph.ipynb
 part_07_run_parts_01_02_and_03.ipynb
-part_07_run_parts_01_02_and_03_for_export.py*
+part_07_run_parts_01_02_and_03.py*
 part_08_visualize_processing_time_v2.1.R
 run_part_01_structure_data.bat
 run_part_02_demonstrate_extraction_timing_techniques.bat

@@ -1,6 +1,9 @@
-# mike babb
-# TODO: HOLD FOR DATE
-# functions used to find anagrams
+#!/usr/bin/env python
+# coding: utf-8
+# Mike Babb
+# babb.mike@outlook.com
+# Find Anagrams: Part 00: File and DB i/o utilities
+
 
 # standard libraries
 from time import perf_counter_ns
@@ -8,10 +11,10 @@ import os
 import pickle
 import sqlite3
 
-# external
+# external libraries
 import pandas as pd
 
-# custom
+# custom libraries
 import _run_constants as rc
 
 
@@ -35,6 +38,21 @@ def calc_time(time_start:perf_counter_ns,
     if round_digits != -1:
         time_proc = round(time_proc, round_digits)
     return time_proc
+
+
+def compute_total_time(total_time_start:perf_counter_ns):
+    print('##########')
+    print('TOTAL TIME ELAPSED:')
+    # record the total time
+    total_time_seconds = calc_time(
+        time_start=total_time_start, round_digits=-1)
+    total_time_minutes = total_time_seconds / 60
+    # round for display
+    total_time_seconds = round(total_time_seconds, 2)
+    total_time_minutes = round(total_time_minutes, 2)
+
+    print(total_time_seconds, "seconds |",  total_time_minutes, "minutes")
+    
 
 # helper function to save pickled objects
 def save_pickle(file_path, file_name, obj):

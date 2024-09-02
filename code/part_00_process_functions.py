@@ -1,6 +1,8 @@
-# mike babb
-# TODO: HOLD FOR DATE
-# functions used to find anagrams
+#!/usr/bin/env python
+# coding: utf-8
+# Mike Babb
+# babb.mike@outlook.com
+# Find Anagrams: Part 00: Data processing functions called in subsequent scripts
 
 # standard libraries
 import collections
@@ -8,14 +10,13 @@ import datetime
 import os
 from time import perf_counter_ns
 
-# external
+# external libraries
 import numpy as np
 import pandas as pd
 
-# custom
+# custom libraries
 import _run_constants as rc
 from part_00_file_db_utils import *
-
 
 
 def load_input_data(data_path: str = rc.data_output_file_path, db_path = rc.db_path, db_name: str = rc.db_name, in_file_path: str = rc.in_file_path) -> pd.DataFrame:

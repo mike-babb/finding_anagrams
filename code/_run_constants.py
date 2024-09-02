@@ -1,14 +1,16 @@
-# constants used across the various files for finding anagrams
-# this cuts down on the total number of lines of code AND increases code re-useability
-# 2024 06 06
+#!/usr/bin/env python
+# coding: utf-8
+# Mike Babb
+# babb.mike@outlook.com
+# Find Anagrams: Part 00: define run constants
+
 
 # standard libraries
 import os
 
-# external
+# external libraries
 
-# custom
-
+# custom libraries
 
 # path and name of input data
 in_file_path = "/git/finding_anagrams/data/"

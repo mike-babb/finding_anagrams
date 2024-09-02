@@ -1,33 +1,23 @@
 #!/usr/bin/env python
 # coding: utf-8
-
 # Mike Babb
 # babb.mike@outlook.com
-# Find anagrams
-# Part 2: Generate and store the anagrams v2.0
+# Find Anagrams Part 3: Generate and store the anagrams
 
 
-# standard libraries - installed by default
-# import collections
-# import os
-# import pickle
-# import sqlite3
-# import string
+# standard libraries
 from time import perf_counter_ns
 
+# external libraries
 
-# external libraries - not installed by default
-import numpy as np
-import pandas as pd
-
-
+# custom libraries
 from _run_constants import *
 from part_00_file_db_utils import *
 from part_00_process_functions import *
 
 
-def run_part_03(matrix_extraction_option: int, n_subset_letters: int, write_data: bool, letter_subset_list:None,
-           db_path: str, db_name: str, in_file_path: str):
+def run_part_03(matrix_extraction_option: int, n_subset_letters: int, write_data: bool, letter_subset_list: None,
+                db_path: str, db_name: str, in_file_path:str):
 
     # start a timer to record the entire operation
     total_time_start = perf_counter_ns()
@@ -36,8 +26,8 @@ def run_part_03(matrix_extraction_option: int, n_subset_letters: int, write_data
 
     word_df, wg_df, letter_dict, char_matrix, \
         word_group_id_list, word_id_list, wchar_matrix = load_input_data(
-            db_path=rc.db_path, db_name=rc.db_name,
-            in_file_path=rc.data_output_file_path)
+            db_path=db_path, db_name=db_name,
+            in_file_path=in_file_path)
 
     # subset the matrix
     wg_df, n_char_matrix_dict, single_letter_matrix_dict, letter_selector_matrix_dict, nc_ls_matrix_dict, p_time = split_matrix(
@@ -82,6 +72,9 @@ def run_part_03(matrix_extraction_option: int, n_subset_letters: int, write_data
 
 if __name__ == '__main__':
 
+    # start a timer to record the entire operation
+    total_time_start = perf_counter_ns()
+
     ####
     # process control flags
     ####
@@ -112,5 +105,10 @@ if __name__ == '__main__':
     # letter_subset_list = 'SAMPLE'
     letter_subset_list = None
 
-    run_part_03(matrix_extraction_option=matrix_extraction_option, n_subset_letters=n_subset_letters, letter_subset_list = letter_subset_list,
-           write_data=write_data, db_path=rc.db_path, db_name=rc.db_name, in_file_path=rc.in_file_path)
+    run_part_03(matrix_extraction_option=matrix_extraction_option,
+                n_subset_letters=n_subset_letters,
+                letter_subset_list=letter_subset_list,
+                write_data=write_data, db_path=rc.db_path, db_name=rc.db_name, 
+                in_file_path=rc.in_file_path)
+
+    compute_total_time(total_time_start=total_time_start)

@@ -2,21 +2,22 @@
 # coding: utf-8
 # Mike Babb
 # babb.mike@outlook.com
-# Find Anagrams
+# Find Anagrams: Part 1: Structure the data
 
-# Part 1: Structure the data
-# standard libraries - installed by default
+# standard libraries
 import collections
 import os
 import string
+from time import perf_counter_ns
 
-# external libraries - not installed by default
+# external libraries
 import numpy as np
 import pandas as pd
 
-# custom, user-defined functions
+# custom
 import _run_constants as rc
 from part_00_file_db_utils import *
+
 
 def import_and_format_words(in_fpn: str):
     # use pandas to load the data
@@ -27,7 +28,8 @@ def import_and_format_words(in_fpn: str):
 
     # how many words are we working with?
     n_words = len(word_df)
-    print("...found", "{:,}".format(n_words), "words to find relationships for...")
+    print("...found", "{:,}".format(n_words),
+          "words to find relationships for...")
 
     # convert the only column to a string - just to be safe.
     # 'nan' is a word in the dictionary. nan is an internal python value.
@@ -58,7 +60,8 @@ def import_and_format_words(in_fpn: str):
 def compute_word_group_id(word_df: pd.DataFrame) -> pd.DataFrame:
     print("...computing the word group id...")
     # add a hash id to capture the sorted letters in each word
-    word_df["hash_id"] = word_df["lcase"].map(lambda x: hash("".join(sorted(x))))
+    word_df["hash_id"] = word_df["lcase"].map(
+        lambda x: hash("".join(sorted(x))))
 
     # create a dataframe of the unique, hashed values
     word_id_hash_id_df = word_df["hash_id"].drop_duplicates().to_frame()
@@ -77,8 +80,10 @@ def compute_word_group_id(word_df: pd.DataFrame) -> pd.DataFrame:
     letter_dict = {l: li for li, l in enumerate(string.ascii_lowercase)}
 
     # get the unique letters in each word and then sort those letters
-    word_df["letter_group"] = word_df["lcase"].map(lambda x: "".join(sorted(set(x))))
+    word_df["letter_group"] = word_df["lcase"].map(
+        lambda x: "".join(sorted(set(x))))
     return word_df, letter_dict
+
 
 def count_letter_frequency(word_df: pd.DataFrame):
     print("...counting letter frequencies...")
@@ -105,14 +110,15 @@ def count_letter_frequency(word_df: pd.DataFrame):
     ).reset_index(names=["letter"])
     letter_count_df["single_letter_count"] = letter_count_df["letter"].map(
         single_letter_counter
-    )    
+    )
 
     # compute the total letter rank and the single_letter_count
     letter_count_df["total_letter_rank"] = (
         letter_count_df["total_letter_count"].rank(ascending=False).astype(int)
     )
     letter_count_df["single_letter_rank"] = (
-        letter_count_df["single_letter_count"].rank(ascending=False).astype(int)
+        letter_count_df["single_letter_count"].rank(
+            ascending=False).astype(int)
     )
 
     # sort by letter count
@@ -143,7 +149,8 @@ def count_letter_frequency(word_df: pd.DataFrame):
     )
 
     fl_count_df["first_letter_rank"] = (
-        fl_count_df["first_letter_word_count"].rank(ascending=False).astype(int)
+        fl_count_df["first_letter_word_count"].rank(
+            ascending=False).astype(int)
     )
 
     # joins
@@ -202,6 +209,7 @@ def count_letter_frequency(word_df: pd.DataFrame):
     )
     return word_df, letter_count_df
 
+
 def generate_character_matrix(word_df: pd.DataFrame, letter_dict: dict) -> np.ndarray:
     # count the occurences of each letter in each word and store the results in a matrix named char_matrix
     # populate the char_matrix and the word_id dictionary
@@ -256,6 +264,7 @@ def create_word_group_df(word_df: pd.DataFrame) -> pd.DataFrame:
     wg_df["word_group_count"] = wg_df["word_group_id"].map(word_group_counter)
     return wg_df
 
+
 def save_objects(
     char_matrix: np.ndarray,
     letter_dict: dict,
@@ -275,7 +284,8 @@ def save_objects(
     # letter dictionary
     print("...saving the letter dictionary...")
     output_name = "letter_dict.pkl"
-    save_pickle(file_path=output_file_path, file_name=output_name, obj=letter_dict)
+    save_pickle(file_path=output_file_path,
+                file_name=output_name, obj=letter_dict)
     print("...saving tables to database...")
     # save the word df to sqlite db
     write_data_to_sqlite(
@@ -321,7 +331,8 @@ def run_part_01(
         word_df=word_df
     )
     # build the character matrix
-    char_matrix = generate_character_matrix(word_df=word_df, letter_dict=letter_dict)
+    char_matrix = generate_character_matrix(
+        word_df=word_df, letter_dict=letter_dict)
     # create the word group dataframe - removes all exact word groups
     wg_df = create_word_group_df(word_df=word_df)
     # save everything to disk
@@ -335,10 +346,17 @@ def run_part_01(
         db_name=db_name,
     )
 
-if __name__ == "__main__":    
+
+if __name__ == "__main__":
+
+    # start a timer to record the entire operation
+    total_time_start = perf_counter_ns()
+
     run_part_01(
         in_file_path=rc.in_file_path,
         in_file_name=rc.in_file_name,
         base_output_file_path=rc.base_output_file_path,
         db_name=rc.db_name,
     )
+
+    compute_total_time(total_time_start=total_time_start)

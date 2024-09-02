@@ -4,17 +4,19 @@
 # # babb.mike@outlook.com
 # # Find anagrams
 # ## Part 7: Run part 01, part 02, and part 03
-# standard libraries - installed by default
-import csv
-import os
-import sqlite3
-import time
 
-# external libraries - not installed by default
-import numpy as np
-import pandas as pd
-from part_00_process_functions import build_db_conn, query_db
+
+
+# standard libraries
+from time import perf_counter_ns
+
+# external libraries
+#import numpy as np
+#import pandas as pd
+
+# custom libraries
 import _run_constants as rc
+from part_00_file_db_utils import compute_total_time
 from part_01_structure_data import run_part_01
 from part_02_demonstrate_extraction_timing_techniques import run_part_02
 from part_03_generate_and_store_anagrams import run_part_03
@@ -44,6 +46,10 @@ def run_part_07(in_file_path: str, in_file_name: str, base_output_file_path: str
 
 
 if __name__ == '__main__':
+
+    # start a timer to record the entire operation
+    total_time_start = perf_counter_ns()
+
     ####
     # process control flags
     ####
@@ -77,3 +83,6 @@ if __name__ == '__main__':
                 db_path=rc.db_path, db_name=rc.db_name, data_output_file_path=rc.data_output_file_path,
                 matrix_extraction_option=matrix_extraction_option, n_subset_letters=n_subset_letters,
                 letter_subset_list=None, write_data=False)
+
+
+    compute_total_time(total_time_start = total_time_start)
