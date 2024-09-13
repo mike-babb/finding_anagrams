@@ -6,13 +6,12 @@
 # ## Part 7: Run part 01, part 02, and part 03
 
 
-
 # standard libraries
 from time import perf_counter_ns
 
 # external libraries
-#import numpy as np
-#import pandas as pd
+# import numpy as np
+# import pandas as pd
 
 # custom libraries
 import _run_constants as rc
@@ -25,8 +24,8 @@ from part_03_generate_and_store_anagrams import run_part_03
 def run_part_07(in_file_path: str, in_file_name: str, base_output_file_path: str, db_path: str,
                 db_name: str, data_output_file_path: str, matrix_extraction_option: int,
                 n_subset_letters: int, letter_subset_list: None, write_data: bool):
+    
     # Part 01
-
     run_part_01(
         in_file_path=in_file_path,
         in_file_name=in_file_name,
@@ -35,7 +34,6 @@ def run_part_07(in_file_path: str, in_file_name: str, base_output_file_path: str
     )
 
     # Part 02
-
     run_part_02(db_path=db_path, db_name=db_name,
                 data_output_file_path=data_output_file_path,
                 n_subset_letters=n_subset_letters)
@@ -84,5 +82,4 @@ if __name__ == '__main__':
                 matrix_extraction_option=matrix_extraction_option, n_subset_letters=n_subset_letters,
                 letter_subset_list=None, write_data=False)
 
-
-    compute_total_time(total_time_start = total_time_start)
+    compute_total_time(total_time_start=total_time_start)

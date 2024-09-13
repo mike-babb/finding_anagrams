@@ -21,7 +21,7 @@ db_name <- 'words.db'
 db_path_name <- file.path(db_path, db_name)
 
 # output directory
-output_path <- '/project/finding_anagrams/graphics'
+output_path <- '/git/finding_anagrams/assets'
 if(!dir.exists(output_path)){
   dir.create(output_path)
 }
