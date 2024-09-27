@@ -64,11 +64,11 @@ The letter selector groups range in size from a single word to over 145K words. 
 For ease of interpretation, the x-axis is log-transformed. Most letter groups are small: 25-percent of the 2,387 distinct letter groups feature 340 words or fewer and 50-percent of the 2,387 letter groups feature 1,665 words or fewer. The average group size is a little over 7.4K words. Grouping by least common letters is an efficient way to sub-divide the initial `char_matrix`. In fact, it is so efficient that matrix extraction option 5 executes in under four minutes. 
  
 ## Matrix Extraction Option 6: Matrices are sub-divided by groups of least common letters and number of characters
-Of the five previous matrix extraction options, option 5 is currently in first place. Can we improve on option 5? The answer is a resounding "yes, sort of, but not really..." More on that in a bit, but first the method behind option 6: a combination of word length and groups of least common letters. Option 6 performs additional subdivision by finding the set of words common between words that are at least *N* characters in length *and* the groups of least common letters. This generates 16,101 sub-matrices. Again, focusing on the word `achiever`, we can intersect the set of 489 words with the three least common letters of `['v', 'h', 'c']` with the set of candidate words that are at least 8 characters in length - 170,056 words - to produce a list of 449 candidate words. This process is repeated for all words. Just like for option 5, we can get a sense of the distibution of the search space by examining the sizes of the letter-group-number-of-characters groups.   
+Of the five previous matrix extraction options, option 5 is currently in first place. Can we improve on option 5? The answer is a resounding "yes, but..." More on that in a bit, but first the method behind option 6: a combination of word length and groups of least common letters. Option 6 performs additional subdivision by finding the set of words common between words that are at least *N* characters in length *and* the groups of least common letters. This generates 16,101 sub-matrices. Again, focusing on the word `achiever`, we can intersect the set of 489 words with the three least common letters of `['v', 'h', 'c']` with the set of candidate words that are at least 8 characters in length - 170,056 words - to produce a list of 449 candidate words. This process is repeated for all words. Just like for option 5, we can get a sense of the distibution of the search space by examining the sizes of the letter-group-number-of-characters groups.   
 ![Letter selector difference](/assets/meo_6_nc_ls_group_size.png)  
-Again, note the log-transformation on the x-axis. While the general shape of the distributions is similar, note the differences in the magnitude of the y-axis: some of the largest groups are greater than 600 in number. The groups of letter-group-number-of-characters range in size from a single word to over 145K words. The average group size is approximately 4.5K words and the 50-percent of groups have a size of 789 or fewer. Quite the skewed distribution! Effectively, with matrix extraction option 6, there are more, smaller groups of candidate words when compared to matrix extraction option 5. As the previous five matrix extraction techniques have shown, reductions in the search space lead to decreases in processing time. And because of this reduced search space, option 6 also completes in under 4 minutes.
+Again, note the log-transformation on the x-axis. While the general shape of the two distributions is similar, note the differences in the magnitude of the y-axis: some of the largest groups are greater than 600 in number. The groups of letter-group-number-of-characters range in size from a single word to over 145K words. The average group size is approximately 4.5K words and 50-percent of groups have a size of 789 or fewer. Effectively, with matrix extraction option 6, there are more, smaller groups of candidate words when compared to matrix extraction option 5. As the previous five matrix extraction techniques have shown, reductions in the search space lead to decreases in processing time. And because of this reduced search space, option 6 also completes in under 4 minutes.
 
-So, why is the answer to "is matrix extraction option 6 faster than matrix extraction option 5" a resounding "yes, sort of, but not really..."? There are several reasons for this and to unpack that (remarkably) qualified statement, let's focus on the word 'achiever' and the time it takes to find the parent words for 'achiever'. The table below details the time it takes to find the parent word for for each matrix extraction technique:
+So, why is the answer to "is matrix extraction option 6 faster than matrix extraction option 5" a resounding "yes, but..."? There are several reasons for this and to unpack that qualified statement, let's focus on the word 'achiever' and the average time it takes to find the parent words for 'achiever' for 100 runs of each matrix extraction technique:
 
 |Matrix Extraction Technique| Seconds|
 |------|-----|
@@ -79,7 +79,28 @@ So, why is the answer to "is matrix extraction option 6 faster than matrix extra
 |Option 5|0.018|
 |Option 6|0.015|
 
-When comparing extraction times for a single word, 'achiever', matrix extraction option 6 *IS* faster. And because those numbers are orders of magnitude different, it's better to compare those times as a ratio benchmarked to Option 1. In this case, option 1 takes 2.75 seconds to complete. 
+When comparing extraction times for a single word, 'achiever', matrix extraction option 6 *IS* faster. And because those numbers are orders of magnitude different, computing the ratio of each extraction technique execution time to each other extraction technique execution time will better showcase the differences in execution time. The heatmap below visualizes those ratios. 
+
+!['achiever' comp times](/assets/meo_x_comp_times.png)  
+
+The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that option 6 is over 180 times faster than option 1! Using the least common letter, option 4, is 7 times faster than using the first letter of a word. While those are exciting numbers, these are the differences for a single word as opposed to all words. For that, we can perfom an additional tabulation to compare the ratios of total times for each time.  
+![all words comp times](/assets/meo_x_comp_times_all_words.png)  
+Examining this heat map, we can see that matrix extraction technique 6 is 20% slower than matrix extraction technique 5. The total time for each extraction technique is as follows:
+
+|Matrix Extraction Technique| Seconds| Minutes| Hours|
+|------|------|------|------|
+|Option 1|5463.43|91.06|1.52|
+|Option 2|3135.51|52.26|0.87|
+|Option 3|1832.36|30.54|0.51|
+|Option 4|1008.57|16.81|0.28|
+|Option 5|177.23|2.95|0.05|
+|Option 6|216.32|3.61|0.06|
+
+
+
+
+
+
 
 
 

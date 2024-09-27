@@ -1,0 +1,20 @@
+y_ticks = list(range(0, 101, 10))
+y_tick_labels_formatted = ['{:.0%}'.format(ytl/100) for ytl in y_ticks]   
+
+my_plot.set_yticks(ticks = y_ticks)
+my_plot.set_yticklabels(labels = y_tick_labels_formatted, rotation=0)
+
+
+y_tick_labels = list(range(0, 140001, 20000))
+y_tick_labels_formatted = ['{:,}'.format(ytl) for ytl in y_tick_labels]   
+
+my_plot.set_yticks(ticks = y_tick_labels)
+my_plot.set_yticklabels(labels = y_tick_labels_formatted, rotation=0)
+
+
+
+x_ticks = list(range(0,6))
+x_tick_labels_formatted = ['{:,}'.format(10**xtl) for xtl in x_ticks]   
+
+my_plot.set_xticks(ticks = x_ticks)
+my_plot.set_xticklabels(labels = x_tick_labels_formatted, rotation=0)
