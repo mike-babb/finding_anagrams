@@ -1,0 +1,1 @@
+pyan3 *.py --uses --no-defines --colored --grouped --annotated --dot-rankdir 'LR' --svg awesome.svg 
