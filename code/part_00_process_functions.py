@@ -262,9 +262,9 @@ def split_matrix(
             # is to use the set().intersection() method. It blows other methods out of the water.
             # But...
 
-            # THERE IS A LOT OF OVERHEAD IN THIS PART - THE set() INTERSECTION AND THEN CONVERTING THE
-            # RESULTING SET TO A NUMPY ARRAY. THIS TAKES ABOUT 33% OF THE TOTAL
-            # RUNTIME OF THIS FUNCTION
+            # THERE IS A LOT OF OVERHEAD IN THIS PART - THE set() INTERSECTION
+            # AND THEN CONVERTING THE RESULTING SET TO A NUMPY ARRAY. THIS TAKES
+            # ABOUT 33% OF THE TOTAL RUNTIME OF THIS FUNCTION
             # LEAVING THESE SNIPPETS OF ALTERNATIVES IN FOR REFERENCE AND LEARNING
             ##
 
@@ -423,11 +423,11 @@ def compute_lookups(wg_df: pd.DataFrame,
     n_char_lu_dict = {nc: nc_items[0].shape[0]
                       for nc, nc_items in n_char_matrix_dict.items()}
 
-    # count the number of look ups
+    # count the number of look ups for each letter
     single_letter_lu_dict = {sl: sl_items[0].shape[0]
                              for sl, sl_items in single_letter_matrix_dict.items()}
 
-    # count the number of possible values for a given letter select
+    # count the number of possible values for a given letter selector
     letter_selector_lu_dict = {ls: ls_items[0].shape[0]
                                for ls, ls_items in letter_selector_matrix_dict.items()}
 
