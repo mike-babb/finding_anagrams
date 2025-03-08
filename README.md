@@ -87,8 +87,7 @@ When comparing extraction times for a single word, 'achiever', matrix extraction
 
 !['achiever' comp times](/graphics/meo_x_comp_times.png)  
 
-The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that option 6 is over 180 times faster than option 1! Using the least common letter, option 4, is 7 times faster than using the first letter of a word. While those are exciting numbers, these are the differences for a single word as opposed to all words. For that, we can create an additional tabulation to compare the ratios of total times for each word.  
-![all words comp times](/graphics/meo_x_comp_times_all_words.png)  
+The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that option 6 is over 180 times faster than option 1! Using the least common letter, option 4, is 7 times faster than using the first letter of a word. 
 Examining this heat map, we can see that matrix extraction technique 6 is 20% slower than matrix extraction technique 5. The total time for each extraction technique is as follows:
 
 |Matrix Extraction Technique| Seconds| Minutes| Hours|
@@ -104,9 +103,13 @@ So, why is matrix extraction option 6 slower than matrix extraction 5? In short,
 
 In sum, the differences in processing times relate to the size of the sub-matrices. Each sub-matrix is a search space. By carefully curating the number and size of sub-matrix, we can reduce the produce the processing. Below is a graphic featuring a boxplot of the distribution of sub-matrix size.
 ![sub-matrix size](/graphics/meo_x_box_plot_distribution.png)  
-As the sizes of sub-matrices decrease, the number of sub-matrices increases. This has diminishing returns. To illustrate this, I will showcase this heatmap showing the ratios of all-words processing times by technique to option 1:  
+As the sizes of sub-matrices decrease, the number of sub-matrices increases. This has diminishing returns. This previously To illustrate this, I will showcase this heatmap showing the ratios of all-words processing times by technique to option 1:  
 ![all words proc times](/graphics/meo_x_comp_times_all_words.png)
 Matrix extraction option 5 is 30 times faster than matrix extraction 1 while matrix extraction 6 is only 25 times faster than matrix extraction option 1. To further illustrate this concept of diminishing returns, I will suggest setting `n_subset_letters = 4` in  [part_02_demonstrate_extraction_timing_techniques.ipynb](/code/part_02_demonstrate_extraction_timing_techniques.ipynb) and running the notebook.
+
+While those are exciting numbers, these are the differences for a single word as opposed to all words. For that, we can create an additional tabulation to compare the ratios of total times for each word.  
+![all words comp times](/graphics/meo_x_comp_times_all_words.png)  
+
 
 As a final comment, up until this point, I have not have mentioned any timing related to generating the sub-matrices. For options 2 through 4, it takes about 2 seconds to generate the submatrices. Generating the sub-matrices for option 5 takes about 10 seconds and it takes about a minute to generate the sub-matrices for option 6. In other words, for option 5, an extra 8 seconds of pre-processing results in a time savings of 88 minutes when compared with matrix extraction option 1.
 

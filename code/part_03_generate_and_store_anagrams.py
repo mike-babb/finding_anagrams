@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # Option 5: n least common letters
     # Option 6: word-length and n least common letters
 
-    matrix_extraction_option = 6
+    matrix_extraction_option = 1
 
     # max number of letters to slice to use for the generation of sub-matrices for
     # options 5 and 6. More letters means more sub-matrices
