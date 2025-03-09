@@ -17,7 +17,6 @@ library(RSQLite)
 library(stringi)
 library(RColorBrewer)
 
-
 # input db path and name
 db_path <- '/project/finding_anagrams/data'
 db_name <- 'words.db'
@@ -159,6 +158,7 @@ y_breaks <- seq(0, max_minutes, 1)
 if(y_breaks[length(y_breaks)] < max_minutes){
   y_breaks <- c(y_breaks, y_breaks[length(y_breaks)] + 1)
 }
+
 # check the breaks
 y_breaks
 
@@ -369,9 +369,8 @@ plot(my_plot)
 dev.off()
 
 ####
-# Box and whisker plot of the distribution of from to words
-####
-
+# PART 7: Box and whisker plot of the distribution of from to words
+#### 
 
 w_tdf <- tdf[matrix_extraction_option == 1, ]
 head(w_tdf)
@@ -402,9 +401,15 @@ my_plot <- ggplot(data=w_tdf, aes(x=n_chars, y = n_to_word_groups, group = n_cha
 
 my_plot
 
+file_name <- 'number_of_to_words_by_word_length.png'
+fpn <- file.path(output_path, file_name)
+
+png(filename = fpn, width = 960, height = 720)
+plot(my_plot)
+dev.off()
 
 ####
-# Box and whisker plot of the distribution of search candidates for 2 - 6
+# Part 8: Box and whisker plot of the distribution of search candidates for 2 - 6
 ####
 
 wdf <- melt_wg_lu_df[, ]
@@ -420,7 +425,6 @@ y_limits <- range(y_breaks)
 y_labels
 
 head(wdf)
-
 
 my_plot <- ggplot(data=wdf, aes(x=n_chars, y = n_candidates, group = n_chars)) +
   geom_boxplot() + 
@@ -441,7 +445,6 @@ fpn <- file.path(output_path, file_name)
 png(filename = fpn, width = 960, height = 720)
 plot(my_plot)
 dev.off()
-
 
 
 

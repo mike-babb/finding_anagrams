@@ -155,12 +155,12 @@ Each of the six techniques in part_03 will produce the same data using different
 * `part_08_visualize_processing_time.R` - Make graphics using [`R`](https://www.r-project.org/)! Because the data generated in parts 01, 02, and 03 are stored in a SQLiteDB, we can connect to the database using the [RSQLite](https://rsqlite.r-dbi.org) library and in turn load the data as a [data.table](https://rdatatable.gitlab.io/data.table/) object. From there, we can then use the [ggplot2](https://ggplot2.tidyverse.org/) library to produce several plots showcasing different aspects of the processing times. This graphic below showcases the total time it takes to find all parent words by letter length:
 ![total time by word length](/graphics/tot_proc_time_by_word_length.png). Additional graphics generated in R include the following:
 
+* avg_from_to_words_by_word_length.png - the average count of from words and to words by word length
+* avg_proc_time_by_word_length.png - the average processing time by word length and matrix extraction technique
+* avg_search_candidates_by_word_length.png - the average number of search candidates by word length
+* number_of_to_words_by_word_length.png - box plot of
+* number_of_candidate_to_words_by_word_length.png - 
 
-avg_from_to_words_by_word_length_v2.png
-avg_proc_time_by_word_length.png
-avg_search_candidates_by_word_length_v2.png
-number_of_candidates_to_words_by_word_length.png
-tot_proc_time_by_word_length.png
 
 
 
