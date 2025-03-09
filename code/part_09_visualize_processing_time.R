@@ -1,5 +1,8 @@
-# mike babb
-# visualize some interesting things
+# Mike Babb
+# babb.mike@outlook.com
+# Find anagrams
+# Part 9: Plot aspects of timing
+
 
 ##
 # clean up
@@ -86,6 +89,7 @@ proc_time_df[, tot_minutes := tot_seconds / 60]
 ####
 # PART 2: SHAPE DATA TO PLOT TOTAL PROCESSING TIME BY LETTER
 ####
+
 # specify factor levels
 my_factor_levels <- tdf$matrix_extraction_option %>% unique() %>% sort(decreasing = FALSE)
 # manually create factor labels
@@ -179,10 +183,11 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color =
                      limits = y_limits) +
   guides(color = guide_legend(title = 'Matrix Extraction Technique\n(total time)')) +
   theme_bw()
-# check plot
+
+# check the plot
 my_plot
 
-# save plot to disk
+# save the plot disk
 file_name <- 'tot_proc_time_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
@@ -198,7 +203,7 @@ dev.off()
 max_avg_seconds <- df_agg$mean_proc_time %>% max()
 max_avg_seconds
 # let's set it to .05
-max_avg_seconds <- .05
+max_avg_seconds <- .06
 
 y_breaks = seq(0, max_avg_seconds, .01)
 y_labels <- formatC(x = y_breaks, digits = 2, format = 'f', big.mark = ',')
@@ -220,8 +225,10 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_fac
   guides(color = guide_legend(title = 'Processing\nTechnique')) +
   theme_bw()
 
+# check the plot
 my_plot
 
+# save the plot
 file_name <- 'avg_proc_time_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
@@ -297,7 +304,7 @@ my_plot <- ggplot(data=melt_sdf_agg, aes(x=n_chars, y = mean_comp_words, color =
 
 my_plot
 
-file_name <- 'avg_search_candidates_by_word_length_v2.png'
+file_name <- 'avg_search_candidates_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -308,13 +315,7 @@ dev.off()
 # PART 6: POINT AND LINE PLOT OF THE AVERAGE NUMBER OF FROM/TO WORDS BY WORD LENGTH, FACETED
 ####
 
-
-
-####
-# PART 6: POINT AND LINE PLOT OF THE AVERAGE NUMBER OF FROM/TO WORDS BY WORD LENGTH, FACETED
-####
-
-# create a datatable
+# create a data.table
 
 # aggregate to get averages
 # pick a matrix extraction option - this part is all the same
@@ -360,7 +361,7 @@ my_plot <- ggplot(data=df_melt, aes(x=n_chars, y = value)) +
 
 my_plot
   
-file_name <- 'avg_from_to_words_by_word_length_v2.png'
+file_name <- 'avg_from_to_words_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)

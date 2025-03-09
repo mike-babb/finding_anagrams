@@ -87,7 +87,7 @@ So, why is the answer to "is matrix extraction option 6 faster than matrix extra
 
 When comparing extraction times for a single word, 'achiever', matrix extraction option 6 *IS* faster. And because those numbers are orders of magnitude different, computing the ratio of each extraction technique's execution time to each other extraction technique's execution time will better showcase the differences in execution time. The heatmap below visualizes those ratios. 
 
-!['achiever' comp times](/graphics/meo_x_comp_times.png)  
+!['achiever' comp times](/graphics/meo_all_comp_times.png)  
 
 The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that both option 5 and 6 are over 100 times faster than option 1! Using the least common letter, option 4, is 11 times faster than using the first letter of a word. Examining this heat map, we can see that matrix extraction technique 6 is 10% faster than matrix extraction technique 5. But again, this is just for a single word. 
 
@@ -104,11 +104,11 @@ Comparing the total processing time for all words for all techinques we have the
  
 And again, because those numbers are orders of magnitude different, we can compute the ratio of processing times as follows:
 
-![all words proc times](/graphics/meo_x_comp_times_all_words.png)  
+![all words proc times](/graphics/meo_all_comp_times_all_words.png)  
 
 Looking at the ratios of the different processing times, we see that option 5 is approximately 34 times faster than option 1 while option 6 is approxiately 25 times faster than option 1. So, why is matrix extraction option 6 slower than matrix extraction 5? In short, the number of keys used to correspond to the sub-matrices. This, too, is a search space. There are 2,387 sub-matrices created for matrix extraction option 5 and 16,101 matrices created for matrix extraction option 6: approximately 6.7 times as many sub-matrices. When processing each word, there are now an initial 16,101 comparisons to make (to find the right sub-matrix) before making the comparisons that find the parent words for a focal word. These extra comparisons add to the time it takes to find the parent words of a given word. By carefully curating the number and size of the sub-matrices, we can reduce the processing time. Below is a graphic featuring a boxplot of the distribution of sub-matrix size for options 2 through 6. Option 1 is omitted as there is no sub-matrix.
-![sub-matrix size](/graphics/meo_x_box_plot_distribution.png)  
-As the sizes of sub-matrices decrease, the number of sub-matrices increase. This has diminishing returns as can be seen in the [previously mentioned heatmap](/graphics/meo_x_comp_times_all_words.png) comparing the ratios of extraction above. To  urther illustrate this concept of diminishing returns, I will suggest setting `n_subset_letters = 4` in  [part_02_demonstrate_extraction_timing_techniques.ipynb](/code/part_02_demonstrate_extraction_timing_techniques.ipynb) or [part_02_demonstrate_extraction_timing_techniques.py](/code/part_02_demonstrate_extraction_timing_techniques.py) and running the notebook or script.
+![sub-matrix size](/graphics/meo_all_box_plot_distribution.png)  
+As the sizes of sub-matrices decrease, the number of sub-matrices increase. This has diminishing returns as can be seen in the [previously mentioned heatmap](/graphics/meo_all_comp_times_all_words.png) comparing the ratios of extraction above. To  urther illustrate this concept of diminishing returns, I will suggest setting `n_subset_letters = 4` in  [part_02_demonstrate_extraction_timing_techniques.ipynb](/code/part_02_demonstrate_extraction_timing_techniques.ipynb) or [part_02_demonstrate_extraction_timing_techniques.py](/code/part_02_demonstrate_extraction_timing_techniques.py) and running the notebook or script.
 
 As a final comment, up until this point, I have not have mentioned any timing related to generating the sub-matrices. For options 2 through 4, it takes about 2 seconds to generate the sub-matrices. Generating the sub-matrices for option 5 takes about 10 seconds and it takes about a minute to generate the sub-matrices for option 6. In other words, for option 5, an extra 8 seconds of pre-processing results in a time savings of 88 minutes when compared with matrix extraction option 1.
 
@@ -139,41 +139,40 @@ This script and notebook find the parent words for all words in the list of foca
 Each of the six techniques in part_03 will produce the same data using different data structuring and access techniques. 
 
 ## ETL
-* `part_07_run_parts_01_02_and_03.ipynb` and `part_07_run_parts_01_02_and_03.py` can be used to run parts 01, 02, and 03 from one notebook / script. This is helpful in showcasing the overall time it takes to run one matrix extraction technique.
-
-# QUERY, ANALYZE, VISUALIZE
+* `part_04_run_parts_01_02_and_03.ipynb` and `part_04_run_parts_01_02_and_03.py` can be used to run parts 01, 02, and 03 from one notebook / script. This is helpful in showcasing the overall time it takes to run one matrix extraction technique.
 
 ## QUERY
 
-* `part_04_query_anagram_database.ipynb` - query the anagram database. Shows how to crosswalk from `word_group_id` to `word`.
-part_05_add_database_indices.ipynb - adds indices to tables in the anagarm database. This showcases how database indices can dramatically speed up data retrieval times: from minutes to query for a single word to sub-second access. This notebook only needs to be run after  the `anagram_groups` table is (re)created. 
+* `part_05_query_anagram_database.ipynb` - query the anagram database. Shows how to crosswalk from `word_group_id` to `word`.
+* `part_06_add_database_indices.ipynb` - adds indices to tables in the anagarm database. This showcases how database indices can dramatically speed up data retrieval times: from minutes to query for a single word to sub-second access. This notebook only needs to be run afterthe `anagram_groups` table is (re)created. 
 
 ## ANALYSIS
-* `part_06_build_a_graph.ipynb` - build a graph of the parent/child word relationships after for the word `terminator`. 
+* `part_07_build_a_graph.ipynb` - build a graph of the parent/child word relationships after for the word `terminator`. 
 
-* `part_08_plot_counts_of_search_spaces.ipynb` use `matplotlib` and `seaborn` to plot counts of search 
+# VISUALIZATION
+* `part_08_plot_counts_of_search_spaces.ipynb` - use [`matplotlib`](https://matplotlib.org/) and [`seaborn`](https://seaborn.pydata.org/) to plot counts of search spaces and processing times. This file generates the `meo_*_.png` images.
+
+* `part_08_visualize_processing_time.R` - Make graphics using [`R`](https://www.r-project.org/)! Because the data generated in parts 01, 02, and 03 are stored in a SQLiteDB, we can connect to the database using the [RSQLite](https://rsqlite.r-dbi.org) library and in turn load the data as a [data.table](https://rdatatable.gitlab.io/data.table/) object. From there, we can then use the [ggplot2](https://ggplot2.tidyverse.org/) library to produce several plots showcasing different aspects of the processing times. This graphic below showcases the total time it takes to find all parent words by letter length:
+![total time by word length](/graphics/tot_proc_time_by_word_length.png). Additional graphics generated in R include the following:
 
 
-part_08_visualize_processing_time_v2.1.R
+avg_from_to_words_by_word_length_v2.png
+avg_proc_time_by_word_length.png
+avg_search_candidates_by_word_length_v2.png
+number_of_candidates_to_words_by_word_length.png
+tot_proc_time_by_word_length.png
+
+
+
+
+# call graphs
+
+
+# profiling
 run_part_01_structure_data.bat
 run_part_02_demonstrate_extraction_timing_techniques.bat
 run_part_03_generate_and_store_anagrams.bat
 
-# VISUALIZATION
-
-
-
-
-```
-5. part_03_query_anagram_database_v1.0.ipynb - Query the SQLite database to extract a set of anagrams. Makes use of words.
-6. part_03_query_anagram_database_v2.0.ipynb - Query the SQLite database to extract a set of anagrams. Makes use of word groups.
-7. part_04_add_database_indices_v1.0.ipynb - Add indices to the anagrams table to decrease data access time.
-8. part_04_add_database_indices_v2.0.ipynb - Add indices to the anagram_groups table to decrease data access time.
-9. part_05_build_a_graph_v1.0.ipynb - Create a graph object using the NetworkX python library, save to a Gephi graph file format for visualization.
-10. part_05_build_a_graph_v2.0.ipynb - Create a graph object using the NetworkX python library, save to a Gephi graph file format for visualization.
-11. part_06_visualize_processing_time_v1.0.R - Use R to connect to a SQLite db, query data, and plot data. 
-12. part_06_visualize_processing_time_v2.0.R - Use R to connect to a SQLite db, query data, and plot data. Limits the visualization to only examine words unique word groups.
-```
 
 
 

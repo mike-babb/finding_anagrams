@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
-# # Mike Babb
-# # babb.mike@outlook.com
-# # Find anagrams
-# ## Part 7: Run part 01, part 02, and part 03
+# Mike Babb
+# babb.mike@outlook.com
+# Find anagrams
+# Part 4: Run part 01, part 02, and part 03
 
 
 # standard libraries
