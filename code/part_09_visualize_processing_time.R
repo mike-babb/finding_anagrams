@@ -371,37 +371,54 @@ dev.off()
 ####
 # PART 7: Box and whisker plot of the distribution of from to words
 #### 
-
+# select meo 1, it doesn't matter which meo we use, all of the numbers are the sam
 w_tdf <- tdf[matrix_extraction_option == 1, ]
 head(w_tdf)
+w_tdf$matrix_extraction_option %>% unique()
 
 w_tdf$n_from_word_groups %>% summary()
 w_tdf$n_to_word_groups %>% summary()
 
+# melt, to make it make sense
+melt_df = melt.data.table(data = w_tdf, id.vars = c('n_chars'),
+                          measure.vars = c('n_from_word_groups', 'n_to_word_groups'),
+                          variable.name = 'group_direction',value.name = 'word_groups',
+                          value.factor = FALSE)
+melt_df %>% head()
+
 # remove values less than 99.5%
-upper_bound <- quantile(x= w_tdf$n_to_word_groups, probs = .995)
-upper_bound
+t_upper_bound <- quantile(x= w_tdf$n_to_word_groups, probs = .99999)
+t_upper_bound
 
-w_tdf <- w_tdf[n_to_word_groups <= upper_bound, ]
+f_upper_bound <- quantile(x= w_tdf$n_from_word_groups, probs = .99999)
+f_upper_bound
 
-y_breaks <- seq(0, 4000, 1000)
+dim(melt_df)
+
+#w_tdf <- w_tdf[n_to_word_groups <= upper_bound, ]
+w_melt_df <- melt_df[word_groups <= t_upper_bound, ]
+w_melt_df %>% dim()
+
+y_breaks <- seq(0, 17000, 1000)
 y_labels <- formatC(x = y_breaks, digits = 0, format = 'f',big.mark = ',')
 y_limits <- range(y_breaks)
 
+head(w_melt_df)
 
-my_plot <- ggplot(data=w_tdf, aes(x=n_chars, y = n_to_word_groups, group = n_chars)) +
+my_plot <- ggplot(data=w_melt_df, aes(x=n_chars, y = word_groups, group = n_chars)) +
   geom_boxplot() + 
-  ggtitle(label = 'Number of To Words By Word Length') +
+  ggtitle(label = 'Number of Words By Word Length') +
   scale_x_discrete(name = 'Word length (# of Characters)',
-                   breaks = seq(1,max(df_agg$n_chars)),
-                   labels = factor((seq(1,max(df_agg$n_chars)))),
-                   limits = factor(seq(1, max(df_agg$n_chars)))) +
-  scale_y_continuous(name = 'Number of To Words') +
-  theme_bw()
+                   breaks = seq(1,max(w_melt_df$n_chars)),
+                   labels = factor((seq(1,max(w_melt_df$n_chars)))),
+                   limits = factor(seq(1, max(w_melt_df$n_chars)))) +
+  scale_y_continuous(name = 'Number of Words',breaks = y_breaks, labels = y_labels) +
+  theme_bw() + 
+  facet_grid(rows = w_melt_df$group_direction, scales = 'fixed')
 
 my_plot
 
-file_name <- 'number_of_to_words_by_word_length.png'
+file_name <- 'number_of_from_to_words_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -439,7 +456,7 @@ my_plot <- ggplot(data=wdf, aes(x=n_chars, y = n_candidates, group = n_chars)) +
 
 my_plot
 
-file_name <- 'number_of_candidates_to_words_by_word_length.png'
+file_name <- 'number_of_candidate_words_by_word_length.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
