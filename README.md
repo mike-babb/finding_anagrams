@@ -7,12 +7,12 @@ This workshop uses python and the NumPy, Pandas, and SQLite libraries to discove
 
 While version 1.0 of this workshop made use of individual words, version 2.0 makes use of word groups. There are approximately 234K unique words and approximately 216K unique word groups in the initial dataset. A word group is defined as a group of words all containing the same letters: 'emit', 'item', 'mite', and 'time', for example. 
 
-This workshop is built for beginners - people very new to python - and progresses to demonstrations of advanced data processing techniques. To that end, there are six different data processing techniques - referred to as matrix extraction options throughout the workshop - that demonstrate how processing the same data can take 90+ minutes or as little five minutes. Each of the six different processing techniques produce the same output, the difference between each of the processing techniques is how the data processing and retrieval is subdivided. 
+This workshop is built for beginners - people very new to python - and progresses to demonstrations of advanced data processing techniques. To that end, there are six different data processing techniques - referred to as matrix extraction options throughout the workshop - that demonstrate how processing the same data can take 90+ minutes or as little five minutes. Each of the six different processing techniques produce the same output: the discovery of over 73M parent/child word pairs. The difference between each of the processing techniques is how the data processing and retrieval are subdivided. 
 
 Where applicable, there are Jupyter Notebooks and python scripts that demonstrate the same process flow. The notebooks are more interactive while the python scripts can be run from the command line. The notebooks for parts 1, 2, and 3 make use of functions written in the corresponding scripts for parts 1, 2, and 3. In general, the notebooks and scripts start out less complex and become more complex. For example, part_01 features more interactivity (calls to `print` and `pd.DataFrame.head()`) and descriptions of operations and objects(dictionaries and arrays, for example) than part_03. Each part builds upon the previous part(s). 
 
 # THE TECHNIQUE - SUBDIVIDING A MATRIX
-Broadly, this workshop finds parent/child word pairs by representing words as numeric vectors and performing various vector and matrix operations on each word vector. The differences in processing time orginate from reducing the number of matrix comparisons to be made (in effect, reducing size the search space). For example, comparing a [1, 26] vector with another [1, 26] vector is a lot faster than comparing a [1, 26] vector with a [500, 26] matrix. While the time it takes to perform a single vector comparison operation is trivial, ~216K vector comparison operations is less so. 
+Broadly, this workshop finds parent/child word pairs by representing words as numeric vectors and performing various vector and matrix operations on each word-stored-as-numeric vector. The differences in processing time orginate from reducing the number of matrix comparisons to be made (in effect, reducing the size of the search space). For example, comparing a [1, 26] vector with another [1, 26] vector is a lot faster than comparing a [1, 26] vector with a [500, 26] matrix. While the time it takes to perform a single vector comparison operation is trivial, ~216K vector comparison operations is less so. 
 
 Each of the six different matrix extraction options implements a different way of sub-dividing a 215,842 row by 26 column matrix. Referred to as the `char_matrix` throughout this document. Each row represents a different word and each column indicates the number of occurences of a letter in the ordinal position. By equating the letter 'a' with 0 and the letter 'z' with 25, we can replace each letter in a word with each letter's ordinal position in the the English alphabet. For example, the word `achiever` features the following letters by zero-index position:  
 ```python
@@ -63,87 +63,108 @@ Repeating this process of selecting the three least common letters for each of t
 * 26 One letter groups
 * 111 Two letter groups
 * 2,250 Three letter groups  
+
 The letter selector groups range in size from a single word to over 145K words. We can get a better sense of the distribution of the sizes of the letter selector groups by examining the plot comparing the number of letter selector groups by the size of the letter selector group:  
 ![Letter selector difference](/graphics/meo_5_letter_selector_group_size.png)
 For ease of interpretation, the x-axis is log-transformed. Most letter groups are small: 25-percent of the 2,387 distinct letter groups feature 340 words or fewer and 50-percent of the 2,387 letter groups feature 1,665 words or fewer. The average group size is a little over 7.4K words. Grouping by least common letters is an efficient way to sub-divide the initial `char_matrix`. In fact, it is so efficient that matrix extraction option 5 executes in under four minutes. This is over 7 times faster when compared to option 3 (31 minutes) and over 4 times faster than option 4 (17 minutes). And this is because of the reduction in the search spaces of candidate words. When compared with option 3, the average percent reduction in the search space of candidate words is [92-percent](/graphics/meo_5_letter_selector_lookup_diff.png).
   
 ## Matrix Extraction Option 6: Matrices are sub-divided by groups of least common letters and number of characters
-Of the five previous matrix extraction options, option 5 is currently in first place. Can we improve on option 5? The answer is a resounding *"yes, but..."* More on that in a bit, but first the method behind option 6: a combination of word length and groups of least common letters. Option 6 performs additional subdivision by finding the set of words common between words that are at least *N* characters in length *and* the groups of least common letters. This generates 16,101 sub-matrices. Again, focusing on the word `achiever`, we can intersect the set of 489 words that feature the three least common letters of `['v', 'h', 'c']` with the set of candidate words that are at least 8 characters in length - 170,056 words - to produce a list of 449 candidate words. This process is repeated for all words. Just like for option 5, we can get a sense of the distibution of the search space by examining the sizes of the letter-group-number-of-characters groups.   
+Of the five previous matrix extraction options, option 5 is currently in first place. Can we improve on option 5? The answer is a resounding *"yes, but..."* More on that in a bit, but first the method behind option 6: a combination of word length and groups of least common letters. Option 6 performs additional subdivision by finding the set of words common between words that are at least *N* characters in length *and* the groups of least common letters. This generates 16,101 sub-matrices. Again, focusing on the word `achiever`, we can intersect the set of 489 words that feature the three least common letters of `['v', 'h', 'c']` with the set of candidate words that are at least 8 characters in length - 170,056 words - to produce a list of 449 candidate words. This process is repeated for all words. Just like for option 5, we can get a sense of the distibution of the search space by examining the sizes of the letter-selector-number-of-characters groups.   
 ![Letter selector difference](/graphics/meo_6_nc_ls_group_size.png)  
-Again, note the log-transformation on the x-axis. While the general shape of the graph directly above and the graph of the distribution for [option 5](/graphics/meo_5_letter_selector_group_size.png) is similar, note the differences in the magnitude of the y-axis: for option 6, some of the largest groups are greater than 600 in number. The groups of letter-group-number-of-characters range in size from a single word to over 145K words. The average group size is approximately 4.5K words and 50-percent of groups have a size of 789 or fewer. Effectively, with matrix extraction option 6, there are more, smaller groups of candidate words when compared to matrix extraction option 5. As the previous five matrix extraction techniques have shown, reductions in the search space lead to decreases in processing time. And because of this reduced search space, option 6 also completes in under 4 minutes.
 
-So, why is the answer to "is matrix extraction option 6 faster than matrix extraction option 5" a resounding "yes, but..."? There are several reasons for this and to unpack that qualified statement, let's focus on the word 'achiever' and the average time it takes to find the parent words for 'achiever' for 100 runs of each matrix extraction technique:
+Again, note the log-transformation on the x-axis. While the general shapes of the distribution directly above and the graph of the distribution for [option 5](/graphics/meo_5_letter_selector_group_size.png) are similar, note the differences in the magnitude of the y-axis: for option 6, some of the largest groups are greater than 600 in number. The groups of letter-selector-number-of-characters range in size from a single word to over 145K words. The average group size is approximately 4.5K words and 50-percent of groups have a size of 789 or fewer. Effectively, with matrix extraction option 6, there are more, smaller groups of candidate words when compared to matrix extraction option 5. As the previous five matrix extraction techniques have shown, reductions in the search space lead to decreases in processing time. And because of this reduced search space, option 6 also completes in under 4 minutes.
 
-|Matrix Extraction Technique| Seconds|
-|------|-----|
-|Option 1|2.751|
-|Option 2|2.279|
-|Option 3|1.656|
-|Option 4|0.237|
-|Option 5|0.018|
-|Option 6|0.015|
+So, why is the answer to "is matrix extraction option 6 faster than matrix extraction option 5" a resounding "yes, but..."? There are several reasons for this and to unpack that qualified statement, let's focus on the word 'achiever' and the average time it takes to find the parent words for 'achiever' for 1000 runs of each matrix extraction technique:
 
-When comparing extraction times for a single word, 'achiever', matrix extraction option 6 *IS* faster. And because those numbers are orders of magnitude different, computing the ratio of each extraction technique execution time to each other extraction technique execution time will better showcase the differences in execution time. The heatmap below visualizes those ratios. 
+|Matrix Extraction Technique| Total Seconds| Average Seconds|
+|------|-----|-----|
+|Option 1|26.531|0.026531|
+|Option 2|21.912|0.021912|
+|Option 3|16.238|0.016238|
+|Option 4|2.607|0.002607|
+|Option 5|0.228|0.000228|
+|Option 6|0.201|0.000201|
+
+When comparing extraction times for a single word, 'achiever', matrix extraction option 6 *IS* faster. And because those numbers are orders of magnitude different, computing the ratio of each extraction technique's execution time to each other extraction technique's execution time will better showcase the differences in execution time. The heatmap below visualizes those ratios. 
 
 !['achiever' comp times](/graphics/meo_x_comp_times.png)  
 
-The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that option 6 is over 180 times faster than option 1! Using the least common letter, option 4, is 7 times faster than using the first letter of a word. 
-Examining this heat map, we can see that matrix extraction technique 6 is 20% slower than matrix extraction technique 5. The total time for each extraction technique is as follows:
+The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that both option 5 and 6 are over 100 times faster than option 1! Using the least common letter, option 4, is 11 times faster than using the first letter of a word. Examining this heat map, we can see that matrix extraction technique 6 is 10% faster than matrix extraction technique 5. But again, this is just for a single word. 
 
-|Matrix Extraction Technique| Seconds| Minutes| Hours|
+Comparing the total processing time for all words for all techinques we have the following:
+
+|Matrix Extraction Technique| Hours| Minutes| Seconds|
 |------|------|------|------|
-|Option 1|5463.43|91.06|1.52|
-|Option 2|3135.51|52.26|0.87|
-|Option 3|1832.36|30.54|0.51|
-|Option 4|1008.57|16.81|0.28|
-|Option 5|177.23|2.95|0.05|
-|Option 6|216.32|3.61|0.06|
+|Option 1|1|31|3.43|
+|Option 2|0|52|15.51|
+|Option 3|0|30|32.36|
+|Option 4|0|16|48.57|
+|Option 5|0|2|57.23|
+|Option 6|0|3|36.32|
+ 
+And again, because those numbers are orders of magnitude different, we can compute the ratio of processing times as follows:
 
-So, why is matrix extraction option 6 slower than matrix extraction 5? In short, the number of keys used to correspond to the sub-matrices. This, too, is a search space. There are 2,387 sub-matrices created for matrix extraction option 5 and 16,101 matrices created for matrix extraction option 6: approximately 6.7 times as many sub-matrices. When processing each word, there are now an initial 16,101 comparisons to make (to find the right search space) before making the comparisons that find the parent words for a focal word. These extra comparisons add to the time it takes to find the parent words of a given word. 
+![all words proc times](/graphics/meo_x_comp_times_all_words.png)  
 
-In sum, the differences in processing times relate to the size of the sub-matrices. Each sub-matrix is a search space. By carefully curating the number and size of sub-matrix, we can reduce the produce the processing. Below is a graphic featuring a boxplot of the distribution of sub-matrix size.
+Looking at the ratios of the different processing times, we see that option 5 is approximately 34 times faster than option 1 while option 6 is approxiately 25 times faster than option 1. So, why is matrix extraction option 6 slower than matrix extraction 5? In short, the number of keys used to correspond to the sub-matrices. This, too, is a search space. There are 2,387 sub-matrices created for matrix extraction option 5 and 16,101 matrices created for matrix extraction option 6: approximately 6.7 times as many sub-matrices. When processing each word, there are now an initial 16,101 comparisons to make (to find the right sub-matrix) before making the comparisons that find the parent words for a focal word. These extra comparisons add to the time it takes to find the parent words of a given word. By carefully curating the number and size of the sub-matrices, we can reduce the processing time. Below is a graphic featuring a boxplot of the distribution of sub-matrix size for options 2 through 6. Option 1 is omitted as there is no sub-matrix.
 ![sub-matrix size](/graphics/meo_x_box_plot_distribution.png)  
-As the sizes of sub-matrices decrease, the number of sub-matrices increases. This has diminishing returns. This previously To illustrate this, I will showcase this heatmap showing the ratios of all-words processing times by technique to option 1:  
-![all words proc times](/graphics/meo_x_comp_times_all_words.png)
-Matrix extraction option 5 is 30 times faster than matrix extraction 1 while matrix extraction 6 is only 25 times faster than matrix extraction option 1. To further illustrate this concept of diminishing returns, I will suggest setting `n_subset_letters = 4` in  [part_02_demonstrate_extraction_timing_techniques.ipynb](/code/part_02_demonstrate_extraction_timing_techniques.ipynb) and running the notebook.
+As the sizes of sub-matrices decrease, the number of sub-matrices increase. This has diminishing returns as can be seen in the [previously mentioned heatmap](/graphics/meo_x_comp_times_all_words.png) comparing the ratios of extraction above. To  urther illustrate this concept of diminishing returns, I will suggest setting `n_subset_letters = 4` in  [part_02_demonstrate_extraction_timing_techniques.ipynb](/code/part_02_demonstrate_extraction_timing_techniques.ipynb) or [part_02_demonstrate_extraction_timing_techniques.py](/code/part_02_demonstrate_extraction_timing_techniques.py) and running the notebook or script.
 
-While those are exciting numbers, these are the differences for a single word as opposed to all words. For that, we can create an additional tabulation to compare the ratios of total times for each word.  
-![all words comp times](/graphics/meo_x_comp_times_all_words.png)  
+As a final comment, up until this point, I have not have mentioned any timing related to generating the sub-matrices. For options 2 through 4, it takes about 2 seconds to generate the sub-matrices. Generating the sub-matrices for option 5 takes about 10 seconds and it takes about a minute to generate the sub-matrices for option 6. In other words, for option 5, an extra 8 seconds of pre-processing results in a time savings of 88 minutes when compared with matrix extraction option 1.
 
-
-As a final comment, up until this point, I have not have mentioned any timing related to generating the sub-matrices. For options 2 through 4, it takes about 2 seconds to generate the submatrices. Generating the sub-matrices for option 5 takes about 10 seconds and it takes about a minute to generate the sub-matrices for option 6. In other words, for option 5, an extra 8 seconds of pre-processing results in a time savings of 88 minutes when compared with matrix extraction option 1.
+# AN ETL PIPELINE
+This section describes each script in the ETL pipeline and the various scripts used to analyze different processing times. Parts 01, 02, and 03 form the ETL pipeline while other parts feature various components for code reuse and analyses.
 
 ## SETUP
 The scripts in this portion define contstants and functions used throughout subsequent processes.
 * `_run_constants.py` - Input and output file names and paths. All subsequent scripts reference the paths defined in this file. Paths and names only need to be set once, in this file. 
 
-### Part 00 utilies
+## UTILIES
 * `part_00_file_db_utils.py` - Code reuse for parts 1 through 7. These are mostly I/O and utility functions.
 * `part_00_process_functions.py` - Code reuse for parts 1 through 7. These functions peform the data processing and are called in subsequent parts. The reason for this structure is for code reuse, efficient optimization and debugging, and generally writing less code. Effectively, we can efine the function once and import it.
 
 ## EXTRACT
-The scripts and notebooks in this section shape the data and introduce the matrix extraction techniques. 
-
-### Part 01: Structure Data
 * `part_01_structure_data.ipynb` and `part_01_structure_data.py`
-Load a list of words, perform several calculations and data creation steps, and store the results.
+Load a list of words, perform several calculations and data creation steps, and store the results. This step creates the objects that faciliate the different extraction techniques.
 
 ## TRANSFORM
-
-### Part 02: Demonstrate Matrix Extraction Techniques
 * `part_02_demonstrate_extraction_timing_techniques.ipynb` and `part_02_demonstrate_extraction_timing_techniques.py`
-This script and notebook demonstrate the six different matrix extraction techniques. 
+The scripts in this section demonstrate the techniques - and crucial differences - in the different matrix extraction techniques.
+
+## LOAD
+* `part_03_generate_and_store_anagrams.ipynb` and 
+`part_03_generate_and_store_anagrams.py*`
+This script and notebook find the parent words for all words in the list of focal words using one of the user specified extraction options. The data can optionally be written to a SQLite DB.
+
+Each of the six techniques in part_03 will produce the same data using different data structuring and access techniques. 
+
+## ETL
+* `part_07_run_parts_01_02_and_03.ipynb` and `part_07_run_parts_01_02_and_03.py` can be used to run parts 01, 02, and 03 from one notebook / script. This is helpful in showcasing the overall time it takes to run one matrix extraction technique.
+
+# QUERY, ANALYZE, VISUALIZE
+
+## QUERY
+
+* `part_04_query_anagram_database.ipynb` - query the anagram database. Shows how to crosswalk from `word_group_id` to `word`.
+part_05_add_database_indices.ipynb - adds indices to tables in the anagarm database. This showcases how database indices can dramatically speed up data retrieval times: from minutes to query for a single word to sub-second access. This notebook only needs to be run after  the `anagram_groups` table is (re)created. 
+
+## ANALYSIS
+* `part_06_build_a_graph.ipynb` - build a graph of the parent/child word relationships after for the word `terminator`. 
+
+* `part_08_plot_counts_of_search_spaces.ipynb` use `matplotlib` and `seaborn` to plot counts of search 
+
+
+part_08_visualize_processing_time_v2.1.R
+run_part_01_structure_data.bat
+run_part_02_demonstrate_extraction_timing_techniques.bat
+run_part_03_generate_and_store_anagrams.bat
+
+# VISUALIZATION
 
 
 
-Each of the four techniques in part_02 v1 will produce the same data using different data structuring and access techniques. Part_02 v2 will use the same techinuqe in v1, but will examine groups of words. NumPy is incredibly versatile and can do many things. These vignettes showcase how to take advantage of its tools and optimize data processing. The result is that technique 1 takes about 120 minutes to complete while technique 4 takes about 6 minutes to complete. The technique in v2 takes a little over 2 minutes to complete. Each technique in v1 will generate approximately 124M from word / to word pairs. The technique in v2 will generate approximately 73M from word group / to word group pairs, a reduction in storage by 41-percent.
-3. part_02_generate_and_store_anagrams_v1.0.ipynb - Use NumPy to perform matrix opertions and determine from/to word relationships. Four different processing techniques are available, growing in complexity with option 1 being the least complex and taking the most time to complete while option 4 is the most complex and completes in the shortest amount of time. 
-Processing Technique 1: Perform calculations on the entire matrix.
-Processing Technique 2: Create sub-matrices split by word length.
-Processing Technique 3: Create sub-matrices split by word-length and presence of a focal letter.
-Processing Technique 4: Create sub-matrices split by word-length and presence of two (or more) least common letters.
-4. part_02_generate_and_store_anagrams_v2.0.ipynb - Use NumPy to perform matrix opertions and determine from/to word group relationships. The techniques creates sub-matrices similar to processing technique 4 in version 1.0, but uses word groups instead of individual words. For example, by identifying the 'emit' word group (emit, item, mite, and time), and the parent words for 'emit', the parent words are simultaneously determined for 'item', 'mite', and 'time'. 
-## Query the stored data
+
+```
 5. part_03_query_anagram_database_v1.0.ipynb - Query the SQLite database to extract a set of anagrams. Makes use of words.
 6. part_03_query_anagram_database_v2.0.ipynb - Query the SQLite database to extract a set of anagrams. Makes use of word groups.
 7. part_04_add_database_indices_v1.0.ipynb - Add indices to the anagrams table to decrease data access time.
@@ -152,28 +173,12 @@ Processing Technique 4: Create sub-matrices split by word-length and presence of
 10. part_05_build_a_graph_v2.0.ipynb - Create a graph object using the NetworkX python library, save to a Gephi graph file format for visualization.
 11. part_06_visualize_processing_time_v1.0.R - Use R to connect to a SQLite db, query data, and plot data. 
 12. part_06_visualize_processing_time_v2.0.R - Use R to connect to a SQLite db, query data, and plot data. Limits the visualization to only examine words unique word groups.
+```
 
 
-_run_constants.py
-part_00_file_db_utils.py
-part_00_process_functions.py
 
 
-part_02_demonstrate_extraction_timing_techniques.ipynb
-part_02_demonstrate_extraction_timing_techniques.py*
 
-part_03_generate_and_store_anagrams.ipynb
-part_03_generate_and_store_anagrams.py*
-
-part_04_query_anagram_database.ipynb
-part_05_add_database_indices.ipynb
-part_06_build_a_graph.ipynb
-part_07_run_parts_01_02_and_03.ipynb
-part_07_run_parts_01_02_and_03.py*
-part_08_visualize_processing_time_v2.1.R
-run_part_01_structure_data.bat
-run_part_02_demonstrate_extraction_timing_techniques.bat
-run_part_03_generate_and_store_anagrams.bat
 
 
 ### EXTRA VISUALS
