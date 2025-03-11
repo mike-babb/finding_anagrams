@@ -10,12 +10,14 @@
 rm(list = ls())
 gc()
 
+library(scales)
 library(data.table)
 library(ggplot2)
 library(magrittr)
 library(RSQLite)
-library(stringi)
 library(RColorBrewer)
+library(stringi)
+
 
 # input db path and name
 db_path <- '/project/finding_anagrams/data'
@@ -188,7 +190,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color =
 my_plot
 
 # save the plot disk
-file_name <- 'tot_proc_time_by_word_length.png'
+file_name <- 'wl_time_tot_proc_time.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -229,7 +231,7 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_fac
 my_plot
 
 # save the plot
-file_name <- 'avg_proc_time_by_word_length.png'
+file_name <- 'wl_time_avg_proc_time.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -304,7 +306,7 @@ my_plot <- ggplot(data=melt_sdf_agg, aes(x=n_chars, y = mean_comp_words, color =
 
 my_plot
 
-file_name <- 'avg_search_candidates_by_word_length.png'
+file_name <- 'wl_search_space_avg.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -354,14 +356,14 @@ my_plot <- ggplot(data=df_melt, aes(x=n_chars, y = value)) +
                    breaks = seq(1,max(df_agg$n_chars)),
                    labels = factor((seq(1,max(df_agg$n_chars)))),
                    limits = factor(seq(1, max(df_agg$n_chars)))) +
-  scale_y_continuous(name = 'Average Number of From/To Words') +
+  scale_y_continuous(name = 'Average Number of From/To Words', label = comma) +
   guides(color = guide_legend(title = 'From/To\nRelationship')) +
   theme_bw() +
   facet_grid(rows = vars(word_stat_factor), scales = 'free')
 
 my_plot
   
-file_name <- 'avg_from_to_words_by_word_length.png'
+file_name <- 'wl_from_to_words_avg.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -405,6 +407,16 @@ y_limits <- range(y_breaks)
 
 head(w_melt_df)
 
+w_melt_df %>% head()
+my_factor_levels <- c('n_from_word_groups', 'n_to_word_groups')
+my_factor_labels <- c('From words', 'To words' )
+
+w_melt_df[, group_direction_factor := factor(x = group_direction,
+                                             levels = my_factor_levels,
+                                             labels = my_factor_labels,
+                                             ordered = TRUE)]
+
+
 my_plot <- ggplot(data=w_melt_df, aes(x=n_chars, y = word_groups, group = n_chars)) +
   geom_boxplot() + 
   ggtitle(label = 'Number of Words By Word Length') +
@@ -412,13 +424,15 @@ my_plot <- ggplot(data=w_melt_df, aes(x=n_chars, y = word_groups, group = n_char
                    breaks = seq(1,max(w_melt_df$n_chars)),
                    labels = factor((seq(1,max(w_melt_df$n_chars)))),
                    limits = factor(seq(1, max(w_melt_df$n_chars)))) +
-  scale_y_continuous(name = 'Number of Words',breaks = y_breaks, labels = y_labels) +
+  scale_y_continuous(name = 'Number of Words',breaks = y_breaks,
+                     labels = y_labels) +
+  
   theme_bw() + 
-  facet_grid(rows = w_melt_df$group_direction, scales = 'fixed')
+  facet_grid(rows = w_melt_df$group_direction_factor, scales = 'fixed')
 
 my_plot
 
-file_name <- 'number_of_from_to_words_by_word_length.png'
+file_name <- 'wl_from_to_words_distribution.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
@@ -450,18 +464,41 @@ my_plot <- ggplot(data=wdf, aes(x=n_chars, y = n_candidates, group = n_chars)) +
                    breaks = seq(1,max(df_agg$n_chars)),
                    labels = factor((seq(1,max(df_agg$n_chars)))),
                    limits = factor(seq(1, max(df_agg$n_chars)))) +
-  scale_y_continuous(name = 'Number of candidates') +
+  scale_y_continuous(name = 'Number of candidates', label = comma) +
   theme_bw()  +
   facet_grid(rows = vars(matrix_extraction_option_factor), scales = 'free')
 
 my_plot
 
-file_name <- 'number_of_candidate_words_by_word_length.png'
+
+file_name <- 'wl_search_space_number_of_candidate_words.png'
 fpn <- file.path(output_path, file_name)
 
 png(filename = fpn, width = 960, height = 720)
 plot(my_plot)
 dev.off()
+
+
+####
+# Part 9: Top five from/to words by word-length 
+####
+
+# let's join by the wdf and the w_tdf in order to get the top five
+
+temp_tdf <- w_tdf[matrix_extraction_option == 1, .(word_group_id, n_from_word_groups, n_to_word_groups)]
+
+temp_wg_df <- wg_df[, .(word_group_id, word, n_chars)]
+
+out_df <- merge.data.table(x = temp_tdf, y = temp_wg_df)
+
+out_df[, n_from_rank := frankv(x = n_from_word_groups,order = -1)]
+out_df[, n_to_rank := frankv(x = n_from_word_groups, order = -1)]
+
+head(out_df)
+
+
+
+
 
 
 
