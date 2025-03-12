@@ -487,14 +487,63 @@ dev.off()
 
 temp_tdf <- w_tdf[matrix_extraction_option == 1, .(word_group_id, n_from_word_groups, n_to_word_groups)]
 
-temp_wg_df <- wg_df[, .(word_group_id, word, n_chars)]
+temp_wg_df <- wg_df[, .(word_group_id, lcase, n_chars)]
 
 out_df <- merge.data.table(x = temp_tdf, y = temp_wg_df)
 
-out_df[, n_from_rank := frankv(x = n_from_word_groups,order = -1)]
-out_df[, n_to_rank := frankv(x = n_from_word_groups, order = -1)]
+out_df[, n_from_rank := frankv(x = n_from_word_groups, order = -1, ties.method = 'first'), by = .(n_chars)]
+out_df[, n_to_rank := frankv(x = n_to_word_groups, order = -1,
+                             ties.method = 'first'), by = .(n_chars)]
 
-head(out_df)
+# now, we select the top 5 in each row
+t5_from_df <- out_df[n_from_rank <= 5, .(lcase, n_chars, 
+                                         n_word_groups = n_from_word_groups, 
+                                         n_rank = n_from_rank )]
+t5_from_df[, direction := 'from']
+
+t5_to_df <- out_df[n_to_rank <= 5, .(lcase, n_chars, 
+                                         n_word_groups = n_to_word_groups, 
+                                         n_rank = n_to_rank )]
+t5_to_df[, direction := 'to']
+
+# stack 
+t5_df <- rbind.data.frame(t5_from_df, t5_to_df)
+head(t5_df)
+
+
+
+
+# plot time
+
+my_plot <- ggplot(data = t5_df, mapping = aes(x = n_chars, y = n_rank, size = n_word_groups)) + 
+  geom_point() +
+  geom_text(aes(label = lcase), vjust = -1, size = 3) + 
+  labs(x = "Letter", y = "Rank", size = "Count") +
+  theme_bw() + 
+  facet_grid(rows = vars(t5_df$direction), scales = 'free')
+my_plot
+
+# And here we run into a fundamental limit of static graphics. 
+# regardless of how shuffle this data or the labels, it's too hard to read. 
+# so, let's make an interactive webpage.
+# i'm going to leave this section in for reference.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
