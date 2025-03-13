@@ -510,7 +510,6 @@ t5_to_df[, direction := 'to']
 t5_df <- rbind.data.frame(t5_from_df, t5_to_df)
 head(t5_df)
 
-
 # plot time
 
 my_plot <- ggplot(data = t5_df, mapping = aes(x = n_chars, y = n_rank, size = n_word_groups)) + 
