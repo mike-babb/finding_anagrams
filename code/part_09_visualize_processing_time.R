@@ -511,8 +511,6 @@ t5_df <- rbind.data.frame(t5_from_df, t5_to_df)
 head(t5_df)
 
 
-
-
 # plot time
 
 my_plot <- ggplot(data = t5_df, mapping = aes(x = n_chars, y = n_rank, size = n_word_groups)) + 
@@ -524,9 +522,9 @@ my_plot <- ggplot(data = t5_df, mapping = aes(x = n_chars, y = n_rank, size = n_
 my_plot
 
 # And here we run into a fundamental limit of static graphics. 
-# regardless of how shuffle this data or the labels, it's too hard to read. 
+# regardless of how we shuffle this data or the labels, it's too hard to read. 
 # so, let's make an interactive webpage.
-# i'm going to leave this section in for reference.
+# Leaving this section in for reference.
 
 
 

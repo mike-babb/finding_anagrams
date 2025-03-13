@@ -152,37 +152,37 @@ Each of the six techniques in part_03 will produce the same data using different
 # VISUALIZATION
 * `part_08_plot_counts_of_search_spaces.ipynb` - use [`matplotlib`](https://matplotlib.org/) and [`seaborn`](https://seaborn.pydata.org/) to plot counts of search spaces and processing times. This file generates the `meo_*_.png` images.
 
-* `part_08_visualize_processing_time.R` - Make graphics using [`R`](https://www.r-project.org/)! Because the data generated in parts 01, 02, and 03 are stored in a SQLiteDB, we can connect to the database using the [RSQLite](https://rsqlite.r-dbi.org) library and in turn load the data as a [data.table](https://rdatatable.gitlab.io/data.table/) object. From there, we can then use the [ggplot2](https://ggplot2.tidyverse.org/) library to produce several plots showcasing different aspects of the processing times. This graphic below showcases the total time it takes to find all parent words by letter length:
-![total time by word length](/graphics/tot_proc_time_by_word_length.png). Additional graphics generated in R include the following:
+* `part_09_visualize_processing_time.R` - Make graphics using [`R`](https://www.r-project.org/)! Because the data generated in parts 01, 02, and 03 are stored in a SQLiteDB, we can connect to the database using the [RSQLite](https://rsqlite.r-dbi.org) library and in turn load the data as a [data.table](https://rdatatable.gitlab.io/data.table/) object. From there, we can then use the [ggplot2](https://ggplot2.tidyverse.org/) library to produce several plots showcasing different aspects of the processing times and search space. The tools and techniques in ggplot make it easy to produce plots by multiple aspects. In this case, all plots feature statistics by word length. As an example, the graphic below showcases the total time it takes to find all parent words by word length:
+![total time by word length](/graphics/wl_time_tot_proc_time.png). Additional graphics generated in R include the following:
 
-* avg_from_to_words_by_word_length.png - the average count of from words and to words by word length
-* avg_proc_time_by_word_length.png - the average processing time by word length and matrix extraction technique
-* avg_search_candidates_by_word_length.png - the average number of search candidates by word length
-* number_of_to_words_by_word_length.png - box plot of
-* number_of_candidate_to_words_by_word_length.png - 
+* wl_from_to_words_avg.png - the average count of from words and to words by word length  
+* wl_from_to_words_distribution.png - boxplots of from words and to words by word length  
+These two plots show how as the number of letters in a word increases, the number of child words increase and the number of parent words decrease. This is to be expected. 
+
+* wl_search_space_avg.png - the average size of the search space by word length and matrix extraction technique.
+* wl_search_space_number_of_candidate_words.png - boxplots of the size of the search space by word length and matrix extraction technique.  
+This last plot is similar to the graphic showing ![sub-matrix size](/graphics/meo_all_box_plot_distribution.png).  
+* wl_time_avg_proc_time.png - the average processing time by word length and matrix extraction technique. 
+
+* [part_10_export_data_for_grids.ipynb](/code/part_10_export_data_for_grids.ipynb) - generate the data for two web pages showing a grid of words with the greatest number of parent/child words by word length. Up until this point, I have only mentioned the words as a corpus but I have not focused on any specific word. We have graphed search spaces and the number of from/to words but we haven't looked any specific words. To that end, I have ranked each word based on the number of parent words and the number of child words by word length. I then selected the five words with the greatest number of parent words and the greatest number of child words by word length. As the words ranges in length of 1 through 24 letters, there are 120 words showing the count of parent words and 120 words showing the count of child words. There are 240 words in total. This process is repeated for both words and word groups to illustrate some of the advantages of using word groups over words. 
+    * [word grid][/webpage/word_grid.html] - Top 5 words by parent/child word count by word length
+    * [word group grid][/webpage/word_group_grid.html] - Top 5 word groups by parent/child word count by word length. This graphic also showcases the size of the word group. 
+In both webpages, the counts of `from` words are on the left in blue and the counts of `to` words are on the right in red. In most cases, the `word grid` and the `word group grid` are similar. A key difference can be seen in the words depicting the child words with length of four characters. The top 5 words are: `ante, aten, etna, nate, and neat`. These are effectively the same word (an anagram!) consisting of the letters `'a', 'e', 'n', 't'. The letters in these words can be used to spell 34 other words. By treating these words as one group, we then have the following top 5 word groups: `ante, rate, aery, arse, ates`. This is more interesting (and as we have seen, more computationally efficient).
+The word with the greatest number of child words is [pseudolamellibranchia](https://www.merriam-webster.com/dictionary/Pseudolamellibranchia). The letters in this 23-character word describing a group of bivalve mollusks can be rearranged to spell a whopping 32,455 words. In general, as the word length increases, more child words can be created and a focal word can be found in fewer parent words. In total, there are approximiately 223K unique words identified in the from words, about 95-percent of all words. There are 69K child words identified in the to words section and this represents about 30-percent of all words. 
 
 
 
 
 
-# call graphs
 
 
-# profiling
+
+ 
+
+The top 5 common words 
+
+
+# PROFILING AND PROCESSING STRUCTION 
 run_part_01_structure_data.bat
 run_part_02_demonstrate_extraction_timing_techniques.bat
 run_part_03_generate_and_store_anagrams.bat
-
-
-
-
-
-
-
-
-### EXTRA VISUALS
-two graphs: one by word length, one by starting character
-For each technique: the average difference between the search space and the number of candidates
-
-We also need to compare the reduction in search when compared to MEO 1
-
