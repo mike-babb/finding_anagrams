@@ -1,0 +1,36 @@
+##########
+## WORDS OF LENGTH 4 ## 
+##########
+aire  
+eria  
+##########
+## WORDS OF LENGTH 3 ## 
+##########
+aer  
+air  
+are  
+ear  
+era  
+ira  
+ire  
+rea  
+ria  
+rie  
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+ae  
+ai  
+ar  
+ea  
+er  
+ie  
+ra  
+re  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+a  
+e  
+i  
+r  

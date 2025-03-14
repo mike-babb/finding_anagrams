@@ -150,7 +150,14 @@
                         return brightness > 128 ? "black" : "white"; // Light background = dark text, and vice versa
                     })
                     .style("font-weight", "bold")
-                    .text(d => `${d.word} (${formatNumber(d["number of words"])}) [${d["word group size"]}]`);
+                    .html(d =>
+                        `<a href="wordlist.html?word=${encodeURIComponent(d.word)}&count=${d["number of words"]}" 
+                target="_blank" 
+                style="color: white; text-decoration: none;">
+                ${d.word} (${d["number of words"]})
+            </a>`
+                    );
+
             }
 
 

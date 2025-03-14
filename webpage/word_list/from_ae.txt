@@ -1,0 +1,10 @@
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+ae  
+ea  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+a  
+e  

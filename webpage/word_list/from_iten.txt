@@ -1,0 +1,34 @@
+##########
+## WORDS OF LENGTH 4 ## 
+##########
+iten  
+neti  
+tien  
+tine  
+##########
+## WORDS OF LENGTH 3 ## 
+##########
+nei  
+net  
+nit  
+ten  
+tie  
+tin  
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+en  
+ie  
+in  
+it  
+ne  
+ni  
+te  
+ti  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+e  
+i  
+n  
+t  

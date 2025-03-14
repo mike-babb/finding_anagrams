@@ -1,0 +1,18 @@
+##########
+## WORDS OF LENGTH 3 ## 
+##########
+nei  
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+en  
+ie  
+in  
+ne  
+ni  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+e  
+i  
+n  

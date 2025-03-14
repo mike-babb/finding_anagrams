@@ -1,0 +1,17 @@
+##########
+## WORDS OF LENGTH 3 ## 
+##########
+ire  
+rie  
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+er  
+ie  
+re  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+e  
+i  
+r  

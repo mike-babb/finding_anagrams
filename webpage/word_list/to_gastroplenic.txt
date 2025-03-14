@@ -1,0 +1,59 @@
+##########
+## WORDS OF LENGTH 23 ## 
+##########
+scientificogeographical  
+##########
+## WORDS OF LENGTH 21 ## 
+##########
+pseudoanthropological  
+##########
+## WORDS OF LENGTH 20 ## 
+##########
+oophorosalpingectomy  
+pseudoconglomeration  
+superphlogistication  
+##########
+## WORDS OF LENGTH 19 ## 
+##########
+laparosalpingectomy  
+ovariosalpingectomy  
+pseudocartilaginous  
+salpingocatheterism  
+salpingostenochoria  
+##########
+## WORDS OF LENGTH 18 ## 
+##########
+sphericotriangular  
+##########
+## WORDS OF LENGTH 17 ## 
+##########
+periangiocholitis  
+sectioplanography  
+##########
+## WORDS OF LENGTH 16 ## 
+##########
+precartilaginous  
+steganographical  
+stenographically  
+trigonocephalous  
+##########
+## WORDS OF LENGTH 15 ## 
+##########
+lichenographist  
+pericholangitis  
+trigonocephalus  
+##########
+## WORDS OF LENGTH 14 ## 
+##########
+placentigerous  
+prognosticable  
+stenographical  
+##########
+## WORDS OF LENGTH 13 ## 
+##########
+gastrosplenic  
+postneuralgic  
+##########
+## WORDS OF LENGTH 12 ## 
+##########
+gastroplenic  

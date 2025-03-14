@@ -1,0 +1,62 @@
+##########
+## WORDS OF LENGTH 5 ## 
+##########
+inert  
+inter  
+niter  
+retin  
+trine  
+##########
+## WORDS OF LENGTH 4 ## 
+##########
+iten  
+iter  
+neri  
+neti  
+rein  
+reit  
+rent  
+rine  
+rite  
+teri  
+tern  
+tien  
+tier  
+tine  
+tire  
+trin  
+##########
+## WORDS OF LENGTH 3 ## 
+##########
+ire  
+nei  
+net  
+nit  
+ret  
+rie  
+rit  
+ten  
+tie  
+tin  
+tri  
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+en  
+er  
+ie  
+in  
+it  
+ne  
+ni  
+re  
+te  
+ti  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+e  
+i  
+n  
+r  
+t  

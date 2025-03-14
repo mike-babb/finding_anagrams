@@ -1,0 +1,23 @@
+##########
+## WORDS OF LENGTH 3 ## 
+##########
+aer  
+are  
+ear  
+era  
+rea  
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+ae  
+ar  
+ea  
+er  
+ra  
+re  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+a  
+e  
+r  

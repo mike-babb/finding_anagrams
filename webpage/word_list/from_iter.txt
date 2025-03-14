@@ -1,0 +1,34 @@
+##########
+## WORDS OF LENGTH 4 ## 
+##########
+iter  
+reit  
+rite  
+teri  
+tier  
+tire  
+##########
+## WORDS OF LENGTH 3 ## 
+##########
+ire  
+ret  
+rie  
+rit  
+tie  
+tri  
+##########
+## WORDS OF LENGTH 2 ## 
+##########
+er  
+ie  
+it  
+re  
+te  
+ti  
+##########
+## WORDS OF LENGTH 1 ## 
+##########
+e  
+i  
+r  
+t  
