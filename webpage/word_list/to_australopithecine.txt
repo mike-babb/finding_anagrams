@@ -1,8 +1,0 @@
-##########
-## WORDS OF LENGTH 18 ## 
-##########
-australopithecinae  
-##########
-## WORDS OF LENGTH 17 ## 
-##########
-australopithecine  
