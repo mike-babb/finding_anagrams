@@ -115,13 +115,15 @@
             // Separate "from" and "to" words
             const fromWords = data.filter(d => d.direction === "from");
             const toWords = data.filter(d => d.direction === "to");
-            
+
             // Function to determine text color for better contrast
             function getTextColor(bgColor) {
                 const rgb = d3.color(bgColor).rgb(); // Convert color to RGB
                 const brightness = (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114); // Calculate brightness
                 return brightness > 128 ? "#000" : "#FFF"; // Use black text on light backgrounds, white on dark
             }
+
+
 
             // Define separate color scales
             const fromColorScale = d3.scaleLinear()
@@ -135,8 +137,6 @@
             // Format numbers with commas
             const formatNumber = d3.format(",");
 
-            
-
             // Function to draw a grid
             function drawGrid(selector, words, colorScale, direction) {
                 const grid = d3.select(selector);
@@ -148,17 +148,20 @@
                     .attr("class", "cell")
                     .style("grid-row", d => d["number of characters"])
                     .style("grid-column", d => d["word rank"])
-                    .style("background-color", d => colorScale(d["number of words"]))
-                    .html(d =>
-                        `<a href="wordlist.html?word=${encodeURIComponent(d.word)}&direction=${d.direction}" 
-                target="_blank" 
-                style="color: white; text-decoration: none;">
-                ${d.word} (${d["number of words"]})
-            </a>`
-                    );
+                    .each(function (d) {
+                        let bgColor = colorScale(d["number of words"]); // Get background color from scale
+                        let textColor = getTextColor(bgColor); // Determine best text color
+
+                        d3.select(this)
+                            .style("background-color", bgColor)
+                            .style("color", textColor)
+                            .html(`<a href="wordlist.html?word=${encodeURIComponent(d.word)}&direction=${d.direction}" 
+                          target="_blank" 
+                          style="color: inherit; text-decoration: none;">
+                          ${d.word} (${d["number of words"]})
+                       </a>`);
+                    });
             }
-
-
 
 
             // Function to create row labels (Number of Characters)

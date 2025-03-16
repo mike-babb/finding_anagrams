@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,12 +12,15 @@
             padding: 20px;
             background-color: #f9f9f9;
         }
+
         h2 {
             color: #333;
         }
+
         .collapsible {
             margin: 10px 0;
         }
+
         .collapsible-header {
             background-color: #3498db;
             color: white;
@@ -28,6 +32,7 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
         .collapsible-content {
             display: none;
             padding: 10px;
@@ -36,13 +41,16 @@
             margin-top: 5px;
             border-radius: 5px;
         }
+
         .collapsible-content.active {
             display: block;
         }
+
         ul {
             list-style-type: none;
             padding: 0;
         }
+
         li {
             padding: 5px;
             background: #ffffff;
@@ -52,49 +60,51 @@
         }
     </style>
 </head>
+
 <body>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const params = new URLSearchParams(window.location.search);
-        const selectedWord = params.get("word");
-        const direction = params.get("direction");
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const selectedWord = params.get("word");
+            const direction = params.get("direction");
 
-        if (!selectedWord || !direction) {
-            document.body.innerHTML = "<h2>Invalid selection.</h2>";
-            return;
-        }
+            if (!selectedWord || !direction) {
+                document.body.innerHTML = "<h2>Invalid selection.</h2>";
+                return;
+            }
 
-        const filePath = `/webpage/wordlists/${direction}/${selectedWord}.json`;
+            const filePath = `/webpage/wordlists/${direction}/${selectedWord}.json`;
 
-        fetch(filePath)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Word list not found.");
-                }
-                return response.json();
-            })
-            .then(data => {
-                const groupedWords = {};
-                data.relatedWords.forEach(word => {
-                    const length = word.length;
-                    if (!groupedWords[length]) {
-                        groupedWords[length] = [];
+            fetch(filePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Word list not found.");
                     }
-                    groupedWords[length].push(word);
-                });
+                    return response.json();
+                })
+                .then(data => {
+                    const groupedWords = {};
+                    data.relatedWords.forEach(word => {
+                        const length = word.length;
+                        if (!groupedWords[length]) {
+                            groupedWords[length] = [];
+                        }
+                        groupedWords[length].push(word);
+                    });
 
-                let content = `
-                    <h2>Words related to "${data.word}" (${direction.toUpperCase()})</h2>
-                    <p>Word Count: ${data.number_of_words.toLocaleString()}</p>
-                `;
+                    let directionText = direction === "from" ? "Words leading from" : "Words leading to";
 
-                Object.keys(groupedWords)
-                    .map(Number)
-                    .sort((a, b) => b - a)
-                    .forEach(length => {
-                        const wordCount = groupedWords[length].length;
-                        content += `
+                    let content = `
+    <h2>${directionText} "${data.word}" (${direction.toUpperCase()})</h2>
+    <p>Word Count: ${data.number_of_words.toLocaleString()}</p>`;
+
+                    Object.keys(groupedWords)
+                        .map(Number)
+                        .sort((a, b) => b - a)
+                        .forEach(length => {
+                            const wordCount = groupedWords[length].length;
+                            content += `
                             <div class="collapsible">
                                 <button class="collapsible-header">
                                     Words with ${length} characters (${wordCount} words) - Click to expand/collapse
@@ -104,21 +114,22 @@
                                 </ul>
                             </div>
                         `;
-                    });
+                        });
 
-                document.body.innerHTML = content;
+                    document.body.innerHTML = content;
 
-                document.querySelectorAll(".collapsible-header").forEach(button => {
-                    button.addEventListener("click", function () {
-                        this.nextElementSibling.classList.toggle("active");
+                    document.querySelectorAll(".collapsible-header").forEach(button => {
+                        button.addEventListener("click", function () {
+                            this.nextElementSibling.classList.toggle("active");
+                        });
                     });
+                })
+                .catch(error => {
+                    document.body.innerHTML = `<h2>Error: ${error.message}</h2>`;
                 });
-            })
-            .catch(error => {
-                document.body.innerHTML = `<h2>Error: ${error.message}</h2>`;
-            });
-    });
-</script>
+        });
+    </script>
 
 </body>
+
 </html>
