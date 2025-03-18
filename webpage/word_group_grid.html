@@ -139,29 +139,30 @@
 
             // Function to draw a grid
             function drawGrid(selector, words, colorScale, direction) {
-                const grid = d3.select(selector);
+    const grid = d3.select(selector);
 
-                grid.selectAll(".cell")
-                    .data(words)
-                    .enter()
-                    .append("div")
-                    .attr("class", "cell")
-                    .style("grid-row", d => d["number of characters"])
-                    .style("grid-column", d => d["word rank"])
-                    .each(function (d) {
-                        let bgColor = colorScale(d["number of words"]); // Get background color from scale
-                        let textColor = getTextColor(bgColor); // Determine best text color
+    grid.selectAll(".cell")
+        .data(words)
+        .enter()
+        .append("div")
+        .attr("class", "cell")
+        .style("grid-row", d => d["number of characters"])
+        .style("grid-column", d => d["word rank"])
+        .each(function (d) {
+            let bgColor = colorScale(d["number of words"]); // Get background color
+            let textColor = getTextColor(bgColor); // Determine best text color
+            let formattedCount = d["number of words"].toLocaleString(); // Format number with commas
 
-                        d3.select(this)
-                            .style("background-color", bgColor)
-                            .style("color", textColor)
-                            .html(`<a href="wordlist.html?word=${encodeURIComponent(d.word)}&direction=${d.direction}" 
+            d3.select(this)
+                .style("background-color", bgColor)
+                .style("color", textColor)
+                .html(`<a href="wordlist.html?word=${encodeURIComponent(d.word)}&direction=${d.direction}" 
                           target="_blank" 
                           style="color: inherit; text-decoration: none;">
-                          ${d.word} (${d["number of words"]})
+                          ${d.word} (${formattedCount})
                        </a>`);
-                    });
-            }
+        });
+}
 
 
             // Function to create row labels (Number of Characters)

@@ -68,6 +68,7 @@
             const params = new URLSearchParams(window.location.search);
             const selectedWord = params.get("word");
             const direction = params.get("direction");
+            console.log(direction);
 
             if (!selectedWord || !direction) {
                 document.body.innerHTML = "<h2>Invalid selection.</h2>";
@@ -93,7 +94,7 @@
                         groupedWords[length].push(word);
                     });
 
-                    let directionText = direction === "from" ? "Words leading from" : "Words leading to";
+                    let directionText = direction === "from" ? "Parent words of" : "Child words of";
 
                     let content = `
     <h2>${directionText} "${data.word}" (${direction.toUpperCase()})</h2>
@@ -104,10 +105,13 @@
                         .sort((a, b) => b - a)
                         .forEach(length => {
                             const wordCount = groupedWords[length].length;
+                            // let formattedCount = group.count.toLocaleString(); // Format number with commas
+                            let formattedCount = wordCount.toLocaleString();
+
                             content += `
                             <div class="collapsible">
                                 <button class="collapsible-header">
-                                    Words with ${length} characters (${wordCount} words) - Click to expand/collapse
+                                    Words with ${length} characters (${formattedCount} words) - Click to expand/collapse
                                 </button>
                                 <ul class="collapsible-content">
                                     ${groupedWords[length].map(w => `<li>${w}</li>`).join("")}

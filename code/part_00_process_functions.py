@@ -826,7 +826,7 @@ def generate_from_to_word_group_pairs_simple(
         # number of parent words found
         n_from_words = outcome_word_id_list.shape[0]
 
-        if n_from_words > 1:
+        if n_from_words >= 1:
             # we have matches
             # the focal word
 
