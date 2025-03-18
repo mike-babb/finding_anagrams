@@ -21,7 +21,7 @@ from part_02_demonstrate_extraction_timing_techniques import run_part_02
 from part_03_generate_and_store_anagrams import run_part_03
 
 
-def run_part_07(in_file_path: str, in_file_name: str, base_output_file_path: str, db_path: str,
+def run_part_04(in_file_path: str, in_file_name: str, base_output_file_path: str, db_path: str,
                 db_name: str, data_output_file_path: str, matrix_extraction_option: int,
                 n_subset_letters: int, letter_subset_list: None, write_data: bool):
     
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     # letter_subset_list = ['x']
     # letter_subset_list = 'SAMPLE'
     letter_subset_list = None
-    run_part_07(in_file_path=rc.in_file_path, in_file_name=rc.in_file_name, base_output_file_path=rc.base_output_file_path,
+    run_part_04(in_file_path=rc.in_file_path, in_file_name=rc.in_file_name, base_output_file_path=rc.base_output_file_path,
                 db_path=rc.db_path, db_name=rc.db_name, data_output_file_path=rc.data_output_file_path,
                 matrix_extraction_option=matrix_extraction_option, n_subset_letters=n_subset_letters,
                 letter_subset_list=None, write_data=False)

@@ -185,7 +185,14 @@ Finally, we talk about the change in storage size from words to word groups
 The top 5 common words 
 
 
-# PROFILING AND PROCESSING STRUCTION 
+# PROFILING AND CONTROL FLOW
+
+# NECESSARY LIBRARIES
+pip install pydot
+pip install graphviz
+conda install graphviz
+pip install pyan3==1.1.1
+
 run_part_01_structure_data.bat
 run_part_02_demonstrate_extraction_timing_techniques.bat
 run_part_03_generate_and_store_anagrams.bat

@@ -7,6 +7,7 @@
 # standard libraries
 import collections
 import datetime
+import json
 import os
 from time import perf_counter_ns
 
@@ -19,7 +20,7 @@ import _run_constants as rc
 from part_00_file_db_utils import *
 
 
-def load_input_data(data_path: str = rc.data_output_file_path, db_path = rc.db_path, db_name: str = rc.db_name, in_file_path: str = rc.in_file_path) -> pd.DataFrame:
+def load_input_data(data_path: str = rc.data_output_file_path, db_path=rc.db_path, db_name: str = rc.db_name, in_file_path: str = rc.in_file_path) -> pd.DataFrame:
 
     # load the word_df, the words from Part 1
     print("...loading words into a dataframe...")
@@ -176,7 +177,7 @@ def split_matrix(
 
                 n_char_matrix_dict[nc] = (nc_wg_id_list, nc_sub_wchar_matrix)
 
-            else:                
+            else:
                 nc_wg_id_list, nc_sub_wchar_matrix = n_char_matrix_dict[nc]
                 nc_wg_id_set = n_char_set_dict[nc]
 
@@ -458,7 +459,7 @@ def compute_lookups(wg_df: pd.DataFrame,
         letter_selector_lu_dict
     )
     # matrix extraction option 6
-    wg_lu_df["me_06_nc_ls_lookup"] = wg_lu_df["nc_ls_id"].map(nc_ls_lu_dict)    
+    wg_lu_df["me_06_nc_ls_lookup"] = wg_lu_df["nc_ls_id"].map(nc_ls_lu_dict)
 
     return wg_lu_df
 
@@ -835,11 +836,9 @@ def generate_from_to_word_group_pairs_simple(
 
             output_list[anagram_pair_count:new_anagram_pair_count,
                         :] = outcome_word_id_list
-            
 
-            #n_to_word_counter = collections.Counter(output_list[:, 0])
+            # n_to_word_counter = collections.Counter(output_list[:, 0])
             intmerdiate_to_word_count.update(outcome_word_id_list[:, 0])
-
 
             # set the anagram pair count
             anagram_pair_count = new_anagram_pair_count
@@ -899,11 +898,11 @@ def generate_from_to_word_group_pairs_simple(
     # n_from_word_counter = collections.Counter(output_list[:, 1])
 
     print("...populating the count of to-words...")
-    #big_count_start_time = perf_counter_ns()
-    #n_to_word_counter = collections.Counter(output_list[:, 0])
-    #print(calc_time(time_start = big_count_start_time))
-    #outcome_test = intmerdiate_to_word_count == n_to_word_counter
-    #print(outcome_test)
+    # big_count_start_time = perf_counter_ns()
+    # n_to_word_counter = collections.Counter(output_list[:, 0])
+    # print(calc_time(time_start = big_count_start_time))
+    # outcome_test = intmerdiate_to_word_count == n_to_word_counter
+    # print(outcome_test)
 
     # now, use the map function to get the number of from/to words and the number of
     # candidate words for each word
@@ -1084,6 +1083,35 @@ def display_total_processing_time(
           "seconds |",  total_time_minutes, "minutes")
 
     return None
+
+
+def format_and_save_words_json(df: pd.DataFrame, r_direction: str, curr_word: str, output_path: str):
+
+    # the output file and name
+    output_file_name = f'{curr_word}.json'
+    ofpn = os.path.join(output_path, r_direction, output_file_name)
+
+    with open(file=ofpn, mode='w') as my_file:
+
+        if df.empty:
+            output_dict = {'word': curr_word,
+                           'number_of_words': 0,
+                           'relatedWords': []}
+            json.dump(obj=output_dict, fp=my_file, indent=4)
+        else:
+            df[f'{r_direction}_n_chars'] = df[f'{r_direction}_word'].str.len()
+            col_names = [f'{r_direction}_n_chars', f'{r_direction}_word']
+            temp_df = df.sort_values(by=col_names, ascending=[False, True])
+            word_list = temp_df[f'{r_direction}_word'].tolist()
+            # if curr_word in word_list:
+            #    word_list.remove(curr_word)
+
+            output_dict = {'word': curr_word,
+                           'number_of_words': temp_df.shape[0],
+                           'relatedWords': word_list}
+            json.dump(obj=output_dict, fp=my_file, indent=4)
+
+
 
 
 if __name__ == "__main__":

@@ -1,4 +1,0 @@
-pip install pydot
-pip install graphviz
-conda install graphviz
-pip install pyan3==1.1.1

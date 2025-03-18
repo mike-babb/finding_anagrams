@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Find Anagrams: Part 00: define run constants
 # Mike Babb
 # babb.mike@outlook.com
-# Find Anagrams: Part 00: define run constants
-
 
 # standard libraries
 import os
