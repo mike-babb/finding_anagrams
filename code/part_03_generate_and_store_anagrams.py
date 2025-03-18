@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # Option 5: n least common letters
     # Option 6: word-length and n least common letters
 
-    matrix_extraction_option = 6
+    matrix_extraction_option = 3
 
 
     # max number of letters to slice to use for the generation of sub-matrices for
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     n_subset_letters = 3
 
     # set write_data to True to store the generated list of anagrams
-    write_data = False
+    write_data = True
 
     # Testing options
     # NoneL to include all letters

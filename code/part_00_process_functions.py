@@ -956,13 +956,13 @@ def store_anagram_pairs(
 
     # objects to record write time
     db_write_time_list = []
-    db_write_time_start = datetime.datetime.now()
+    db_write_time_start = perf_counter_ns()
 
     # create a sql statement that we'll use to insert values.
     print("...beginning to add anagram word group pairs...")
     base_sql = "insert into anagram_groups values (?,?)"
 
-    curr_db_write_time_start = datetime.datetime.now()
+    curr_db_write_time_start = perf_counter_ns()
     for i_bp, bp in enumerate(break_point_list[:-1]):
         # slice the output list of word id pairs, convert to a python list
         # the numpy.int data type is not compatable with sqlite.
@@ -981,7 +981,7 @@ def store_anagram_pairs(
             print("...commiting changes:", "{:,}".format(next_bp), "records")
             db_conn.commit()
             # calculate the current time to write 10M records
-            curr_db_write_time_end = datetime.datetime.now()
+            curr_db_write_time_end = perf_counter_ns()
             curr_db_write_time_proc = curr_db_write_time_end - curr_db_write_time_start
             curr_db_write_time_proc = curr_db_write_time_proc.total_seconds()
 
@@ -1008,7 +1008,7 @@ def store_anagram_pairs(
             print("...estimated write complete time:", eta_write_complete)
 
             # restart the current write time
-            curr_db_write_time_start = datetime.datetime.now()
+            curr_db_write_time_start = perf_counter_ns()
 
     # commit the last round of changes
     print("...committing changes:", "{:,}".format(
@@ -1016,7 +1016,7 @@ def store_anagram_pairs(
     db_conn.commit()
 
     # compute total write times
-    db_write_time_end = datetime.datetime.now()
+    db_write_time_end = perf_counter_ns()
     db_write_time_proc = db_write_time_end - db_write_time_start
     db_write_time_proc = db_write_time_proc.total_seconds() / 60
     db_write_time_proc = round(db_write_time_proc, 2)
