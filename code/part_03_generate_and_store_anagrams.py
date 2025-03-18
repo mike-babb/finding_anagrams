@@ -87,8 +87,7 @@ if __name__ == '__main__':
     # Option 5: n least common letters
     # Option 6: word-length and n least common letters
 
-    matrix_extraction_option = 3
-
+    matrix_extraction_option = 5
 
     # max number of letters to slice to use for the generation of sub-matrices for
     # options 5 and 6. More letters means more sub-matrices
@@ -103,8 +102,8 @@ if __name__ == '__main__':
     # ['q', 'x'] or a different set of letters to test a specific letter
     # 'SAMPLE' to take a 10% sample by word length group
     # letter_subset_list = ['x']
-    # letter_subset_list = 'SAMPLE'
-    letter_subset_list = None
+    letter_subset_list = 'SAMPLE'
+    # letter_subset_list = None
 
     run_part_03(matrix_extraction_option=matrix_extraction_option,
                 n_subset_letters=n_subset_letters,

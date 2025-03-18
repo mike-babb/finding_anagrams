@@ -980,10 +980,8 @@ def store_anagram_pairs(
         if next_bp % 10000000 == 0:
             print("...commiting changes:", "{:,}".format(next_bp), "records")
             db_conn.commit()
-            # calculate the current time to write 10M records
-            curr_db_write_time_end = perf_counter_ns()
-            curr_db_write_time_proc = curr_db_write_time_end - curr_db_write_time_start
-            curr_db_write_time_proc = curr_db_write_time_proc.total_seconds()
+            # calculate the current time to write 10M records            
+            curr_db_write_time_proc = calc_time(time_start=curr_db_write_time_start, round_digits=8)            
 
             # save this value
             db_write_time_list.append(curr_db_write_time_proc)
@@ -996,6 +994,7 @@ def store_anagram_pairs(
             elapsed_time += n_seconds
             add_seconds = datetime.timedelta(seconds=elapsed_time)
 
+            # TODO Fix this right here
             eta_write_complete = db_write_time_start + add_seconds
             eta_write_complete = eta_write_complete.strftime(
                 format="%m/%d/%Y, %H:%M:%S"
@@ -1015,13 +1014,10 @@ def store_anagram_pairs(
         len(curr_output_list)), "records")
     db_conn.commit()
 
-    # compute total write times
-    db_write_time_end = perf_counter_ns()
-    db_write_time_proc = db_write_time_end - db_write_time_start
-    db_write_time_proc = db_write_time_proc.total_seconds() / 60
-    db_write_time_proc = round(db_write_time_proc, 2)
-    print("...writing to db took", db_write_time_proc, "minutes")
-
+    # compute total write times    
+    print("...writing to db took:")
+    compute_total_time(total_time_start = db_write_time_start)   
+    
     del curr_output_list
 
     # close connection objects
