@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Find Anagrams - Part 03
+# Generate and store the anagrams
 # Mike Babb
 # babb.mike@outlook.com
-# Find Anagrams Part 3: Generate and store the anagrams
 
 
 # standard libraries
@@ -98,17 +99,17 @@ if __name__ == '__main__':
     write_data = True
 
     # Testing options
-    # NoneL to include all letters
+    # None to include all letters
     # ['q', 'x'] or a different set of letters to test a specific letter
     # 'SAMPLE' to take a 10% sample by word length group
     # letter_subset_list = ['x']
-    letter_subset_list = 'SAMPLE'
-    # letter_subset_list = None
+    # letter_subset_list = 'SAMPLE'
+    letter_subset_list = None
 
     run_part_03(matrix_extraction_option=matrix_extraction_option,
                 n_subset_letters=n_subset_letters,
                 letter_subset_list=letter_subset_list,
-                write_data=write_data, db_path=rc.db_path, db_name=rc.db_name, 
-                in_file_path=rc.in_file_path)
+                write_data=write_data, db_path=rc.DB_PATH, db_name=rc.DB_NAME, 
+                in_file_path=rc.IN_FILE_PATH)
 
     compute_total_time(total_time_start=total_time_start)

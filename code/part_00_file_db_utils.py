@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Find Anagrams - Part 00
+# File and DB i/o utilities
 # Mike Babb
 # babb.mike@outlook.com
-# Find Anagrams: Part 00: File and DB i/o utilities
-
 
 # standard libraries
 from time import perf_counter_ns
@@ -16,7 +16,6 @@ import pandas as pd
 
 # custom libraries
 import _run_constants as rc
-
 
 # setup the data output path
 def create_path(data_output_file_path:str) -> None:
@@ -156,7 +155,7 @@ def write_data_to_sqlite(df:pd.DataFrame, table_name:str, db_path:str, db_name:s
 if __name__ == "__main__":
     # simple test, query the first 10 words
     sql = "select * from words limit 10;"
-    db_path = rc.db_path
-    db_name = rc.db_name
+    db_path = rc.DB_PATH
+    db_name = rc.DB_NAME
     df = query_db(sql=sql, db_path=db_path, db_name=db_name)
     print(df.head())

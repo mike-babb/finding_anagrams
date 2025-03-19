@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Find Anagrams - Part 1
+# Structure the data
 # Mike Babb
 # babb.mike@outlook.com
-# Find Anagrams: Part 1: Structure the data
 
 # standard libraries
 import collections
@@ -353,10 +354,10 @@ if __name__ == "__main__":
     total_time_start = perf_counter_ns()
 
     run_part_01(
-        in_file_path=rc.in_file_path,
-        in_file_name=rc.in_file_name,
-        base_output_file_path=rc.base_output_file_path,
-        db_name=rc.db_name,
+        in_file_path=rc.IN_FILE_PATH,
+        in_file_name=rc.IN_FILE_NAME,
+        base_output_file_path=rc.BASE_OUTPUT_FILE_PATH,
+        db_name=rc.DB_NAME,
     )
 
     compute_total_time(total_time_start=total_time_start)

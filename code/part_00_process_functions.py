@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Find Anagrams - Part 00
+# Data processing functions called in subsequent scripts
 # Mike Babb
 # babb.mike@outlook.com
-# Find Anagrams: Part 00: Data processing functions called in subsequent scripts
 
 # standard libraries
 import collections
@@ -20,7 +21,7 @@ import _run_constants as rc
 from part_00_file_db_utils import *
 
 
-def load_input_data(data_path: str = rc.data_output_file_path, db_path=rc.db_path, db_name: str = rc.db_name, in_file_path: str = rc.in_file_path) -> pd.DataFrame:
+def load_input_data(data_path: str = rc.DATA_OUTPUT_FILE_PATH, db_path=rc.DB_PATH, db_name: str = rc.DB_NAME, in_file_path: str = rc.IN_FILE_PATH) -> pd.DataFrame:
 
     # load the word_df, the words from Part 1
     print("...loading words into a dataframe...")
@@ -995,16 +996,14 @@ def store_anagram_pairs(
             add_seconds = datetime.timedelta(seconds=elapsed_time)
 
             # TODO Fix this right here
-            eta_write_complete = db_write_time_start + add_seconds
-            eta_write_complete = eta_write_complete.strftime(
-                format="%m/%d/%Y, %H:%M:%S"
-            )
+            #eta_write_complete = db_write_time_start + add_seconds
+            #eta_write_complete = eta_write_complete.strftime(format="%m/%d/%Y, %H:%M:%S")
 
             mean_write_time = round(mean_write_time, 2)
             print(
                 "...average write time per 10M records:", mean_write_time, "seconds..."
             )
-            print("...estimated write complete time:", eta_write_complete)
+            #print("...estimated write complete time:", eta_write_complete)
 
             # restart the current write time
             curr_db_write_time_start = perf_counter_ns()
@@ -1106,6 +1105,79 @@ def format_and_save_words_json(df: pd.DataFrame, r_direction: str, curr_word: st
                            'number_of_words': temp_df.shape[0],
                            'relatedWords': word_list}
             json.dump(obj=output_dict, fp=my_file, indent=4)
+
+
+def build_list_of_parent_words(word_group_id: int, db_path: str, db_name: str):
+
+    # build the list of parent words
+    sql = f'select from_word_group_id, to_word_group_id from anagram_groups where to_word_group_id = {word_group_id};'
+
+    pwg_df = query_db(sql=sql, db_path=db_path, db_name=db_name)
+
+    # now, get the word list
+    sql = 'select word_id as from_word_id, word_group_id as from_word_group_id, lcase as from_word from words;'
+    word_df = query_db(sql=sql, db_path=db_path, db_name=db_name)
+    pw_df = pd.merge(left=word_df, right=pwg_df)
+
+    # let's add information to highlight the focal word
+    # select
+    col_names = ['from_word_group_id', 'from_word_id', 'from_word']
+
+    # get a single row - the focal word
+    id_df = pw_df.loc[pw_df['from_word_group_id']
+                      == word_group_id, col_names].copy()
+
+    # rename
+    id_df.columns = ['to_word_group_id', 'to_word_id', 'to_word']
+    # merge
+    pw_df = pd.merge(left=pw_df, right=id_df)
+
+    # reorder
+    col_names = ['from_word_id', 'to_word_id',
+                 'from_word_group_id', 'to_word_group_id',
+                 'from_word', 'to_word']
+
+    # drop duplicates, if any
+    pw_df = pw_df[col_names].drop_duplicates(
+        subset=['from_word_id', 'from_word_group_id', 'from_word'])
+
+    return pw_df
+
+def build_list_of_child_words(word_group_id: int, db_path: str, db_name: str):
+
+    # build the list of parent words
+    sql = f'select from_word_group_id, to_word_group_id from anagram_groups where from_word_group_id = {word_group_id};'
+
+    cwg_df = query_db(sql=sql, db_path=db_path, db_name=db_name)
+
+    # now, get the word list
+    sql = 'select word_id as to_word_id, word_group_id as to_word_group_id, lcase as to_word from words;'
+    word_df = query_db(sql=sql, db_path=db_path, db_name=db_name)
+
+    cw_df = pd.merge(left=word_df, right=cwg_df)
+    print(cw_df.shape)
+    
+    print(cw_df.tail())
+
+    # let's add information to highlight the focal word
+    col_names = ['to_word_group_id', 'to_word_id', 'to_word']
+
+    id_df = cw_df.loc[cw_df['from_word_group_id']
+                      == word_group_id, col_names].copy()
+    #print(id_df.head())
+    
+
+    id_df.columns = ['from_word_group_id', 'from_word_id', 'from_word']
+    cw_df = pd.merge(left=cw_df, right=id_df)  
+
+    col_names = ['from_word_id', 'to_word_id',
+                 'from_word_group_id', 'to_word_group_id',
+                 'from_word', 'to_word']
+
+    cw_df = cw_df[col_names].drop_duplicates(
+        subset=['to_word_id', 'to_word_group_id', 'to_word'])
+
+    return cw_df
 
 
 

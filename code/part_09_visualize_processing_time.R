@@ -1,8 +1,7 @@
+# Find anagrams - Part 09
+# Plot aspects of timing
 # Mike Babb
 # babb.mike@outlook.com
-# Find anagrams
-# Part 9: Plot aspects of timing
-
 
 ##
 # clean up

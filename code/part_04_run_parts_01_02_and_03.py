@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Find anagrams - Part 04
+# Run part 01, part 02, and part 03
 # Mike Babb
 # babb.mike@outlook.com
-# Find anagrams
-# Part 4: Run part 01, part 02, and part 03
 
 
 # standard libraries
@@ -77,8 +77,8 @@ if __name__ == '__main__':
     # letter_subset_list = ['x']
     # letter_subset_list = 'SAMPLE'
     letter_subset_list = None
-    run_part_04(in_file_path=rc.in_file_path, in_file_name=rc.in_file_name, base_output_file_path=rc.base_output_file_path,
-                db_path=rc.db_path, db_name=rc.db_name, data_output_file_path=rc.data_output_file_path,
+    run_part_04(in_file_path=rc.IN_FILE_PATH, in_file_name=rc.IN_FILE_NAME, base_output_file_path=rc.BASE_OUTPUT_FILE_PATH,
+                db_path=rc.DB_PATH, db_name=rc.DB_NAME, data_output_file_path=rc.DATA_OUTPUT_FILE_PATH,
                 matrix_extraction_option=matrix_extraction_option, n_subset_letters=n_subset_letters,
                 letter_subset_list=None, write_data=False)
 

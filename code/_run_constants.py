@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Find Anagrams: Part 00: define run constants
+# Find Anagrams: run constants
 # Mike Babb
 # babb.mike@outlook.com
+
 
 # standard libraries
 import os
@@ -12,17 +13,17 @@ import os
 # custom libraries
 
 # path and name of input data
-in_file_path = "/git/finding_anagrams/data/"
-in_file_name = "words.txt"
+IN_FILE_PATH = "/git/finding_anagrams/data/"
+IN_FILE_NAME = "words.txt"
 
 # output paths
-base_output_file_path = "/project/finding_anagrams"
-data_output_file_path = os.path.join(base_output_file_path, 'data')
-tabulation_output_file_path = os.path.join(base_output_file_path, 'tabulations')
+BASE_OUTPUT_FILE_PATH = "/project/finding_anagrams"
+DATA_OUTPUT_FILE_PATH = os.path.join(BASE_OUTPUT_FILE_PATH, 'data')
+TABULATION_OUTPUT_FILE_PATH = os.path.join(BASE_OUTPUT_FILE_PATH, 'tabulations')
 
 # words
-word_output_file_path = os.path.join(base_output_file_path, 'words')
+WORD_OUTPUT_FILE_PATH = os.path.join(BASE_OUTPUT_FILE_PATH, 'words')
 
 # database name
-db_path = data_output_file_path
-db_name = "words.db"
+DB_PATH = DATA_OUTPUT_FILE_PATH
+DB_NAME = "words.db"

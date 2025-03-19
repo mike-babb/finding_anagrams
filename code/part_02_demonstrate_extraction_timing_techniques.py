@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Find Anagrams: Part 2
+# Demonstrate extraction timing techniques
 # Mike Babb
 # babb.mike@outlook.com
-# Find Anagrams: Part 2: Demonstrate extraction timing techniques
-
 
 # standard libraries
 from itertools import product
@@ -233,8 +233,8 @@ def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
     print(timing_table)
 
     # write to sqlite
-    write_data_to_sqlite(df=timing_table, table_name='matrix_extraction_timing', db_path=rc.db_path,
-                         db_name=rc.db_name)
+    write_data_to_sqlite(df=timing_table, table_name='matrix_extraction_timing', db_path=rc.DB_PATH,
+                         db_name=rc.DB_NAME)
 
     return timing_list
 
@@ -342,8 +342,8 @@ if __name__ == "__main__":
     # start a timer to record the entire operation
     total_time_start = perf_counter_ns()
 
-    run_part_02(db_path=rc.db_path, db_name=rc.db_name,
-                data_output_file_path=rc.data_output_file_path,
+    run_part_02(db_path=rc.DB_PATH, db_name=rc.DB_NAME,
+                data_output_file_path=rc.DATA_OUTPUT_FILE_PATH,
                 n_subset_letters=3)
 
     compute_total_time(total_time_start=total_time_start)
