@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .collapsible {
+            margin: 10px 0;
+        }
+
+        .collapsible-header {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            text-align: left;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-left: 4px solid #3498db;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+
+        .collapsible-content.active {
+            display: block;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 5px;
+            background: #ffffff;
+            margin: 2px 0;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const selectedWord = params.get("word");
+            const direction = params.get("direction");
+            console.log(direction);
+
+            if (!selectedWord || !direction) {
+                document.body.innerHTML = "<h2>Invalid selection.</h2>";
+                return;
+            }
+
+            const filePath = `/webpage/wordlists/${direction}/${selectedWord}.json`;
+
+            fetch(filePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Word list not found.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const groupedWords = {};
+                    data.relatedWords.forEach(word => {
+                        const length = word.length;
+                        if (!groupedWords[length]) {
+                            groupedWords[length] = [];
+                        }
+                        groupedWords[length].push(word);
+                    });
+
+                    let directionText = direction === "from" ? "Parent words of" : "Child words of";
+
+                    let content = `
+    <h2>${directionText} "${data.word}" (${direction.toUpperCase()})</h2>
+    <p>Word Count: ${data.number_of_words.toLocaleString()}</p>`;
+
+                    Object.keys(groupedWords)
+                        .map(Number)
+                        .sort((a, b) => b - a)
+                        .forEach(length => {
+                            const wordCount = groupedWords[length].length;
+                            // let formattedCount = group.count.toLocaleString(); // Format number with commas
+                            let formattedCount = wordCount.toLocaleString();
+
+                            content += `
+                            <div class="collapsible">
+                                <button class="collapsible-header">
+                                    Words with ${length} characters (${formattedCount} words) - Click to expand/collapse
+                                </button>
+                                <ul class="collapsible-content">
+                                    ${groupedWords[length].map(w => `<li>${w}</li>`).join("")}
+                                </ul>
+                            </div>
+                        `;
+                        });
+
+                    document.body.innerHTML = content;
+
+                    document.querySelectorAll(".collapsible-header").forEach(button => {
+                        button.addEventListener("click", function () {
+                            this.nextElementSibling.classList.toggle("active");
+                        });
+                    });
+                })
+                .catch(error => {
+                    document.body.innerHTML = `<h2>Error: ${error.message}</h2>`;
+                });
+        });
+    </script>
+
+</body>
+
+</html>
