@@ -5,7 +5,7 @@ rem: babb.mike@outlook.com
 rem: USE THE SAME CONDA ENVIRONMENT YOU USED TO CREATE THE FUNCTIONS FOR PART 01
 
 rem: use cProfile to view how long things take to execute
-python -m cProfile -o part_01.prf part_01_structure_data.py
+python -m cProfile -o ..\graphics\part_01.prf part_01_structure_data.py
 
 rem: load the viewer
-snakeviz part_01.prf
+snakeviz ..\graphics\part_01.prf

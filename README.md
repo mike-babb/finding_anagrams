@@ -9,6 +9,8 @@ While version 1.0 of this workshop made use of individual words, version 2.0 mak
 
 This workshop is built for beginners - people very new to python - and progresses to demonstrations of advanced data processing techniques. To that end, there are six different data processing techniques - referred to as matrix extraction options throughout the workshop - that demonstrate how processing the same data can take 90+ minutes or as little five minutes. Each of the six different processing techniques produce the same output: the discovery of over 73M parent/child word pairs. The difference between each of the processing techniques is how the data processing and retrieval are subdivided. 
 
+**See [word group grid](/webpage/word_group_grid.html) for the top 5 from words and top 5 to words by word length.**
+
 Where applicable, there are Jupyter Notebooks and python scripts that demonstrate the same process flow. The notebooks are more interactive while the python scripts can be run from the command line. The notebooks for parts 1, 2, and 3 make use of functions written in the corresponding scripts for parts 1, 2, and 3. In general, the notebooks and scripts start out less complex and become more complex. For example, part_01 features more interactivity (calls to `print` and `pd.DataFrame.head()`) and descriptions of operations and objects(dictionaries and arrays, for example) than part_03. Each part builds upon the previous part(s). 
 
 # THE TECHNIQUE - SUBDIVIDING A MATRIX
@@ -150,27 +152,53 @@ Each of the six techniques in part_03 will produce the same data using different
 * `part_07_build_a_graph.ipynb` - build a graph of the parent/child word relationships after for the word `terminator`. 
 
 # VISUALIZATION
-* `part_08_plot_counts_of_search_spaces.ipynb` - use [`matplotlib`](https://matplotlib.org/) and [`seaborn`](https://seaborn.pydata.org/) to plot counts of search spaces and processing times. This file generates the `meo_*_.png` images.
+Both python (part 08) and R (part 09) are used to plot aspects of the search space and process times by matrix extraction technique. Parts 10 and 11 prepare data for use in a webpage. 
 
-* `part_09_visualize_processing_time.R` - Make graphics using [`R`](https://www.r-project.org/)! Because the data generated in parts 01, 02, and 03 are stored in a SQLiteDB, we can connect to the database using the [RSQLite](https://rsqlite.r-dbi.org) library and in turn load the data as a [data.table](https://rdatatable.gitlab.io/data.table/) object. From there, we can then use the [ggplot2](https://ggplot2.tidyverse.org/) library to produce several plots showcasing different aspects of the processing times and search space. The tools and techniques in ggplot make it easy to produce plots by multiple aspects. In this case, all plots feature statistics by word length. As an example, the graphic below showcases the total time it takes to find all parent words by word length:
+## search spaces and processing times
+
+* `part_08_plot_counts_of_search_spaces.ipynb` - use [`matplotlib`](https://matplotlib.org/) and [`seaborn`](https://seaborn.pydata.org/) to plot counts of search spaces and processing times. This file generates the `meo_*_.png` images, referenced and shown in the previous sections.
+
+* `part_09_visualize_processing_time.R` - Make graphics using the [`R programming language`](https://www.r-project.org/)! Because the data generated in parts 01, 02, and 03 are stored in a SQLiteDB, we can connect to the database using the [RSQLite](https://rsqlite.r-dbi.org) library and in turn load the data as a [data.table](https://rdatatable.gitlab.io/data.table/) object. From there, we can then use the [ggplot2](https://ggplot2.tidyverse.org/) library to produce several plots showcasing different aspects of the processing times and search space. In this case, all plots feature statistics by word length. As an example, the graphic below showcases the total time it takes to find all parent words by word length:
 ![total time by word length](/graphics/wl_time_tot_proc_time.png). Additional graphics generated in R include the following:
 
-* wl_from_to_words_avg.png - the average count of from words and to words by word length  
-* wl_from_to_words_distribution.png - boxplots of from words and to words by word length  
+* [wl_from_to_words_avg.png](/graphics/wl_from_to_words_avg.png) - the average count of from words and to words by word length  
+* [wl_from_to_words_distribution.png](/graphics/wl_from_to_words_distribution.png) - boxplots of from words and to words by word length  
 These two plots show how as the number of letters in a word increases, the number of child words increase and the number of parent words decrease. This is to be expected. 
 
-* wl_search_space_avg.png - the average size of the search space by word length and matrix extraction technique.
-* wl_search_space_number_of_candidate_words.png - boxplots of the size of the search space by word length and matrix extraction technique.  
-This last plot is similar to the graphic showing ![sub-matrix size](/graphics/meo_all_box_plot_distribution.png).  
-* wl_time_avg_proc_time.png - the average processing time by word length and matrix extraction technique. 
+* [wl_search_space_avg.png](/graphics/wl_search_space_avg.png) - the average size of the search space by word length and matrix extraction technique.
+* [wl_search_space_number_of_candidate_words.png](/graphics/wl_search_space_number_of_candidate_words.png) - boxplots of the size of the search space by word length and matrix extraction technique.  
+This last plot is similar to the graphic showing [sub-matrix size](/graphics/meo_all_box_plot_distribution.png) the search spaces by technique.
+* [wl_time_avg_proc_time.png](/graphics/wl_time_avg_proc_time.png) - the average processing time by word length and matrix extraction technique. 
+
+## word relationships
 
 * [part_10_create_word_counts.ipynb](/code/part_10_create_word_counts.ipynb) - generate the data for a web page showing a grid of words with the greatest number of parent/child words by word length. Up until this point, I have only mentioned the words as a corpus but I have not really focused on any specific word. We have graphed search spaces and the number of from/to words but we haven't looked any specific words. To that end, I have ranked each word based on the number of parent words and the number of child words by word length. I then selected the five words with the greatest number of parent words and the greatest number of child words by word length. As the words ranges in length of 1 through 24 letters, there are 120 words showing the count of parent words and 120 words showing the count of child words. There are 240 words in total. This script generates one part of the data for the word grid.  
 
 * [part_11_export_data_for_grids.ipynb](/code/part_11_export_data_for_grids.ipynb) - This script generates the parent and child words for the 240 words on the word grid. Clicking on each grid cell takes a user to the formatted list of parent or child words. This script generates that list. And here is the word group grid:
-* [word group grid][/webpage/word_group_grid.html] - Top 5 word groups by parent/child word count by word length. The counts of `from` words are on the left in blue and the counts of `to` words are on the right in red. In general, as the word length increases, more child words can be created and a focal word can be found in fewer parent words. For example, the letter 'e' can be found in over 157K words: over 67-percent of the words in the word list. In total, there are approximiately 233 unique words identified in the list of to words, over 99-percent of all words. There are 101K parents words identified in the from words section, about 43-percent of all words. Across the 120 words in the from word groups, all but the letters 'k' and 'w' are present. Across the 120 words in the to word groups, all but the letters 'q' and 'w' are represented.
+* [word group grid][/webpage/word_group_grid.html] - Top 5 word groups by parent/child word count by word length. The counts of `from` words are on the left in shades of blue and the counts of `to` words are on the right in shades red. In general, as the word length increases, more child words can be created and a focal word can be found in fewer parent words. For example, the letter 'e' can be found in over 157K words: over 67-percent of the words in the word list. In total, there are approximiately 233K unique words identified in the list of 120 to words, over 99-percent of all words. There are 101K parents words identified in the from words section, about 43-percent of all words. Across the 120 words in the from word groups, all but the letters 'k' and 'w' are present. Across the 120 words in the to word groups, all but the letters 'q' and 'w' are present. The word with the greatest number of child words is [pseudolamellibranchia](https://www.merriam-webster.com/dictionary/Pseudolamellibranchia). The letters in this 23-character word describing a group of bivalve mollusks can be rearranged to spell a whopping 32,456 words. 
+
+# INTROSPECTION
+How do the functions in parts 00, 01, 02, and 03 come together? How long do the various components of each function take to execute? We can answer each question by creating static call graphs and profiling. According to [wikipedia](https://en.wikipedia.org/wiki/Call_graph), a call graph "is a control-flow graph which represents calling relationships between subroutines in a computer program." A static call graph represents the idealized flow of the program while a dynamic call graph represents what is *actually* called during a program's execution. [Profiling](https://en.wikipedia.org/wiki/Profiling_(computer_programming)) measurings execution time and complexity. 
+* [part_12_generate_call_graphs.bat](part_12_generate_call_graphs.bat) generates static call graphs. One in the *.svg format:
+![static call graph](/graphics/all_parts_call_graph.svg)  
+The other format is an interactive [html page](/graphics/all_parts_call_graph.html)
+Note: I recommend creating a different conda enviroment with the following libraries:
+``` shell
+conda create -n py38 python==3.8
+pip install pydot
+pip install graphviz
+conda install graphviz
+# yes, it is necessary to install graphviz using both pip and conda
+pip install pyan3==1.1.1
+```
+After this environment has been created, activate the `py38` environment and run the batch file listed above. 
+
+The following 
 
 
-The word with the greatest number of child words is [pseudolamellibranchia](https://www.merriam-webster.com/dictionary/Pseudolamellibranchia). The letters in this 23-character word describing a group of bivalve mollusks can be rearranged to spell a whopping 32,455 words. 
+
+
+
 
 Finally, we talk about the change in storage size from words to word groups
 
@@ -189,12 +217,4 @@ The top 5 common words
 
 # PROFILING AND CONTROL FLOW
 
-# NECESSARY LIBRARIES
-pip install pydot
-pip install graphviz
-conda install graphviz
-pip install pyan3==1.1.1
 
-run_part_01_structure_data.bat
-run_part_02_demonstrate_extraction_timing_techniques.bat
-run_part_03_generate_and_store_anagrams.bat
