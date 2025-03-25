@@ -107,6 +107,7 @@
                             const wordCount = groupedWords[length].length;
                             // let formattedCount = group.count.toLocaleString(); // Format number with commas
                             let formattedCount = wordCount.toLocaleString();
+                            let barColor = direction === "from" ? "blue" : "red"; // Set color based on direction
 
                             content += `
                             <div class="collapsible">
