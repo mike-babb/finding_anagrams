@@ -109,16 +109,19 @@
                             let formattedCount = wordCount.toLocaleString();
                             let barColor = direction === "from" ? "blue" : "red"; // Set color based on direction
 
+                            let headerColor = direction === "from" ? "#3498db" : "#b73838"; // Blue for "from", Red for "to"
+
                             content += `
-                            <div class="collapsible">
-                                <button class="collapsible-header">
-                                    Words with ${length} characters (${formattedCount} words) - Click to expand/collapse
-                                </button>
-                                <ul class="collapsible-content">
-                                    ${groupedWords[length].map(w => `<li>${w}</li>`).join("")}
-                                </ul>
-                            </div>
-                        `;
+    <div class="collapsible">
+        <button class="collapsible-header" style="background-color: ${headerColor};">
+            Words with ${length} characters (${formattedCount} words) - Click to expand/collapse
+        </button>
+        <ul class="collapsible-content">
+            ${groupedWords[length].map(w => `<li>${w}</li>`).join("")}
+        </ul>
+    </div>
+`;
+
                         });
 
                     document.body.innerHTML = content;
