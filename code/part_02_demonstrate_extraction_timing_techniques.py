@@ -238,11 +238,11 @@ def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
     single_timing_df = timing_df.loc[timing_df['source'] ==
                         timing_df['target'], ['source', 'source_timing']]
 
-    temp_df.columns = ['matrix_extraction_option', 'timing']
+    single_timing_df.columns = ['matrix_extraction_option', 'timing']
 
-    temp_df['avg_timing'] = temp_df['timing'] / n_trials
+    single_timing_df['avg_timing'] = single_timing_df['timing'] / n_trials
 
-    write_data_to_sqlite(df = temp_df, table_name='matrix_extraction_timing',
+    write_data_to_sqlite(df = single_timing_df, table_name='matrix_extraction_timing',
                      db_path=rc.DB_PATH, db_name=rc.DB_NAME
                      )
 
@@ -327,7 +327,7 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
                          db_path=db_path, db_name=db_name)
 
     ####
-    # Esimate total number of pairs
+    # Estimate total number of pairs
     ####
 
     # how many parent/child relationships are there?

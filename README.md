@@ -98,18 +98,18 @@ So, why is the answer to "is matrix extraction option `6` faster than matrix ext
 
 |Matrix Extraction Technique| Total Seconds| Average Seconds|
 |------|-----|-----|
-|Option 1|26.531|0.026531|
-|Option 2|21.912|0.021912|
-|Option 3|16.238|0.016238|
-|Option 4|2.607|0.002607|
-|Option 5|0.228|0.000228|
-|Option 6|0.201|0.000201|
+|Option 1|22.65677|0.02266|
+|Option 2|18.92866|0.01893|
+|Option 3|15.76573|0.01577|
+|Option 4|2.1044|0.0021|
+|Option 5|0.15909|0.00016|
+|Option 6|0.15185|0.00015|
 
-When comparing extraction times for a single word, `achiever`, matrix extraction option `6` *IS* faster. And because those numbers are orders of magnitude different, computing the ratio of each extraction technique's execution time to each other extraction technique's execution time will better showcase the differences in execution time. The heatmap below visualizes those ratios. 
+When comparing extraction times for a single word, `achiever`, matrix extraction option `6` *IS* faster. And because those numbers for all extraction techniques are orders of magnitude different, computing the ratio of each extraction technique's execution time to each other extraction technique's execution time will better showcase the differences in execution time. The heatmap below visualizes those ratios. 
 
 ![`achiever` comp times](/graphics/meo_all_comp_times.png)  
 
-The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that both option `5` and `6` are `150` times faster than option `1`! Using the least common letter, option `4`, is `7` times faster than using the first letter of a word. Examining this heat map, we can see that matrix extraction technique `6` is $10$-percent faster than matrix extraction technique `5`. But again, this is just for a single word. 
+The bottom diagonal is not shown as those numbers are the inverse of the top diagonal. Most striking is that both option `5` and `6` are over `140` times faster than option `1`! Using the least common letter, option `4`, is over $7$ times faster than using the first letter of a word (option `3`). Examining this heat map, we can see that matrix extraction technique `6` is marginally faster than matrix extraction technique `5`. But again, this is just for a single word. 
 
 Comparing the total processing time for all words for all techinques we have the following:
 
@@ -122,9 +122,7 @@ Comparing the total processing time for all words for all techinques we have the
 |5|0|3|2|
 |6|0|3|39|
 
-
 And again, because those numbers are orders of magnitude different, we can compute the ratio of processing times as follows:
-
 ![all words proc times](/graphics/meo_all_comp_times_all_words.png)  
 
 Looking at the ratios of the different processing times, we see that option `5` is approximately $34$ times faster than option `1` while option `6` is approxiately $26$ times faster than option `1`. So, why is matrix extraction option `6` slower, on average, than matrix extraction 5? In short, the number of keys used to correspond to the sub-matrices. This, too, is a search space. There are $2,387$ sub-matrices created for matrix extraction option `5` and $16,101$ matrices created for matrix extraction option `6`: approximately $6.7$ times as many sub-matrices. When processing each word, there are now an initial $16,101$ comparisons to make (to find the right sub-matrix) before making the comparisons that find the parent words for a focal word. These extra comparisons - in the form of [dictionary](https://en.wikipedia.org/wiki/Associative_array) keys -  add to the time it takes to find the parent words of a given word. By carefully curating the number and size of the sub-matrices, we can reduce the processing time. But, too much curation adds additional search time. Below is a graphic featuring a boxplot of the distribution of sub-matrix size by matrix extraction technique. Note that there is not a distribution for matrix extraction technique `1` as each word is compared against the same matrix.
