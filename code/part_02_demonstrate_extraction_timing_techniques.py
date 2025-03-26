@@ -25,7 +25,7 @@ def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
                                single_letter_matrix_dict: dict,
                                letter_selector_matrix_dict: dict, nc_ls_matrix_dict: dict,
                                demo_word: str = 'achiever',
-                               n_trials: int = 100):
+                               n_trials: int = 1000):
 
     wg_id = word_df.loc[word_df['lcase'] == demo_word, 'word_group_id'].iloc[0]
 
@@ -229,12 +229,23 @@ def demo_extraction_techniques(word_df: pd.DataFrame, wg_df: pd.DataFrame,
                  for cn in timing_table.columns.tolist()]
 
     timing_table.columns = col_names
-
-    print(timing_table)
-
+    
     # write to sqlite
-    write_data_to_sqlite(df=timing_table, table_name='matrix_extraction_timing', db_path=rc.DB_PATH,
+    write_data_to_sqlite(df=timing_table, table_name='matrix_extraction_timing_ratio', db_path=rc.DB_PATH,
                          db_name=rc.DB_NAME)
+    
+    # save the single timing list
+    single_timing_df = timing_df.loc[timing_df['source'] ==
+                        timing_df['target'], ['source', 'source_timing']]
+
+    single_timing_df.columns = ['matrix_extraction_option', 'timing']
+
+    single_timing_df['avg_timing'] = single_timing_df['timing'] / n_trials
+
+    write_data_to_sqlite(df = single_timing_df, table_name='matrix_extraction_timing',
+                     db_path=rc.DB_PATH, db_name=rc.DB_NAME
+                     )
+
 
     return timing_list
 
@@ -290,11 +301,11 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
         n_subset_letters=n_subset_letters
     )
     # demonstrate the different matrix extraction techniques using the word 'achiever'
-    demo_extraction_techniques(word_df=word_df, wg_df=wg_df, wchar_matrix=wchar_matrix,
-                               word_group_id_list=word_group_id_list, n_char_matrix_dict=n_char_matrix_dict,
-                               single_letter_matrix_dict=single_letter_matrix_dict,
-                               letter_selector_matrix_dict=letter_selector_matrix_dict,
-                               nc_ls_matrix_dict=nc_ls_matrix_dict, demo_word=demo_word)
+    timing_list = demo_extraction_techniques(word_df=word_df, wg_df=wg_df, wchar_matrix=wchar_matrix,
+                                             word_group_id_list=word_group_id_list, n_char_matrix_dict=n_char_matrix_dict,
+                                             single_letter_matrix_dict=single_letter_matrix_dict,
+                                             letter_selector_matrix_dict=letter_selector_matrix_dict,
+                                             nc_ls_matrix_dict=nc_ls_matrix_dict, demo_word=demo_word)
 
     ####
     # Compute the search space for each matrix extraction option.
@@ -316,7 +327,7 @@ def run_part_02(db_path: str, db_name: str, data_output_file_path,
                          db_path=db_path, db_name=db_name)
 
     ####
-    # Esimate total number of pairs
+    # Estimate total number of pairs
     ####
 
     # how many parent/child relationships are there?

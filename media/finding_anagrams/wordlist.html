@@ -75,7 +75,7 @@
                 return;
             }
 
-            const filePath = `/webpage/wordlists/${direction}/${selectedWord}.json`;
+            const filePath = `/media/finding_anagrams/wordlists/${direction}/${selectedWord}.json`;
 
             fetch(filePath)
                 .then(response => {
@@ -97,7 +97,7 @@
                     let directionText = direction === "from" ? "Parent words of" : "Child words of";
 
                     let content = `
-    <h2>${directionText} "${data.word}" (${direction.toUpperCase()})</h2>
+    <h2>${directionText} "${data.word}"</h2>
     <p>Word Count: ${data.number_of_words.toLocaleString()}</p>`;
 
                     Object.keys(groupedWords)
@@ -107,17 +107,21 @@
                             const wordCount = groupedWords[length].length;
                             // let formattedCount = group.count.toLocaleString(); // Format number with commas
                             let formattedCount = wordCount.toLocaleString();
+                            let barColor = direction === "from" ? "blue" : "red"; // Set color based on direction
+
+                            let headerColor = direction === "from" ? "#3498db" : "#b73838"; // Blue for "from", Red for "to"
 
                             content += `
-                            <div class="collapsible">
-                                <button class="collapsible-header">
-                                    Words with ${length} characters (${formattedCount} words) - Click to expand/collapse
-                                </button>
-                                <ul class="collapsible-content">
-                                    ${groupedWords[length].map(w => `<li>${w}</li>`).join("")}
-                                </ul>
-                            </div>
-                        `;
+    <div class="collapsible">
+        <button class="collapsible-header" style="background-color: ${headerColor};">
+            Words with ${length} characters (${formattedCount} words) - Click to expand/collapse
+        </button>
+        <ul class="collapsible-content">
+            ${groupedWords[length].map(w => `<li>${w}</li>`).join("")}
+        </ul>
+    </div>
+`;
+
                         });
 
                     document.body.innerHTML = content;

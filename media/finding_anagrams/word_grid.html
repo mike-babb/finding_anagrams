@@ -1,67 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Group Grid Visualization</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>Word Grid Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>    
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
         .grid-container {
             display: flex;
-            justify-content: space-around;
+            flex-direction: column;
             align-items: flex-start;
+            gap: 10px; /* Space between grids */
+            color: black;
+            width: 100%;
         }
 
         .grid-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
+            max-width: 1200px;            
+        }
+
+        .grid-header {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .row-label-placeholder {
+            width: 100px; /* Matches row labels width */
+            gap: 10px;
         }
 
         .column-labels {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            text-align: center;
+            text-align: left;
             font-weight: bold;
             width: 100%;
+            max-width: 1200px;
             margin-bottom: 5px;
         }
 
         .grid-row-container {
             display: flex;
-            align-items: center;
+            align-items: stretch;
+            width: 100%;
+            max-width: 100;
         }
 
         .row-labels-container {
             display: flex;
             flex-direction: row;
-            align-items: center;
+            justify-content: center;
+            min-width: 50px;
             margin-right: 10px;
         }
 
         .row-title {
             writing-mode: vertical-rl;
-            /* Rotate text vertically */
             transform: rotate(180deg);
-            /* Ensure readable direction */
             font-weight: bold;
             text-align: center;
-            margin-right: 10px;
-            /* Space between title and row labels */
+            margin-bottom: 5px;
         }
 
         .row-labels {
             display: grid;
-            grid-template-rows: repeat(24, 35px);
+            grid-template-rows: repeat(24, 40px);
             text-align: right;
             font-weight: bold;
+            align-items: center;
+            line-height: 30px;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(24, 30px);
+            grid-template-rows: repeat(24, 35px);
+            width: 100%;
+            max-width: 1300px;
             gap: 5px;
             border: 1px solid #ccc;
             padding: 10px;
@@ -79,13 +104,20 @@
         }
     </style>
 </head>
-
 <body>
+
+    <h2>Word Group Grid Visualization</h2>
+
     <div class="grid-container">
         <!-- From Grid -->
         <div class="grid-wrapper">
-            <h2>Parent Word Groups Of:</h2>
-            <div class="column-labels" id="from-column-labels"></div>
+            <h3>Click to see (in a new tab) PARENT words of:</h3>
+
+            <div class="grid-header">
+                <div class="row-label-placeholder"></div>
+                <div class="column-labels" id="from-column-labels"></div>
+            </div>
+
             <div class="grid-row-container">
                 <div class="row-labels-container">
                     <div class="row-title">Number of Characters</div>
@@ -97,8 +129,13 @@
 
         <!-- To Grid -->
         <div class="grid-wrapper">
-            <h2>Child Word Groups Of: </h2>
-            <div class="column-labels" id="to-column-labels"></div>
+            <h3>Click to see (in a new tab) CHILD words of:</h3>
+
+            <div class="grid-header">
+                <div class="row-label-placeholder"></div>
+                <div class="column-labels" id="to-column-labels"></div>
+            </div>
+
             <div class="grid-row-container">
                 <div class="row-labels-container">
                     <div class="row-title">Number of Characters</div>
@@ -111,19 +148,17 @@
 
     <script>
         // Load the JSON data
-        d3.json("word_groups.json").then(data => {
+        d3.json("words.json").then(data => {
             // Separate "from" and "to" words
             const fromWords = data.filter(d => d.direction === "from");
             const toWords = data.filter(d => d.direction === "to");
 
             // Function to determine text color for better contrast
             function getTextColor(bgColor) {
-                const rgb = d3.color(bgColor).rgb(); // Convert color to RGB
-                const brightness = (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114); // Calculate brightness
-                return brightness > 128 ? "#000" : "#FFF"; // Use black text on light backgrounds, white on dark
+                const rgb = d3.color(bgColor).rgb();
+                const brightness = (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114);
+                return brightness > 128 ? "#000" : "#FFF";
             }
-
-
 
             // Define separate color scales
             const fromColorScale = d3.scaleLinear()
@@ -139,56 +174,48 @@
 
             // Function to draw a grid
             function drawGrid(selector, words, colorScale, direction) {
-    const grid = d3.select(selector);
+                const grid = d3.select(selector);
 
-    grid.selectAll(".cell")
-        .data(words)
-        .enter()
-        .append("div")
-        .attr("class", "cell")
-        .style("grid-row", d => d["number of characters"])
-        .style("grid-column", d => d["word rank"])
-        .each(function (d) {
-            let bgColor = colorScale(d["number of words"]); // Get background color
-            let textColor = getTextColor(bgColor); // Determine best text color
-            let formattedCount = d["number of words"].toLocaleString(); // Format number with commas
+                grid.selectAll(".cell")
+                    .data(words)
+                    .enter()
+                    .append("div")
+                    .attr("class", "cell")
+                    .style("grid-row", d => d["number of characters"])
+                    .style("grid-column", d => d["word rank"])
+                    .each(function (d) {
+                        let bgColor = colorScale(d["number of words"]);
+                        let textColor = getTextColor(bgColor);
+                        let formattedCount = d["number of words"].toLocaleString();
 
-            d3.select(this)
-                .style("background-color", bgColor)
-                .style("color", textColor)
-                .html(`<a href="wordlist.html?word=${encodeURIComponent(d.word)}&direction=${d.direction}" 
-                          target="_blank" 
-                          style="color: inherit; text-decoration: none;">
-                          ${d.word} (${formattedCount})
-                       </a>`);
-        });
-}
-
+                        d3.select(this)
+                            .style("background-color", bgColor)
+                            .style("color", textColor)
+                            .html(`<a href="wordlist.html?word=${encodeURIComponent(d.word)}&direction=${d.direction}" 
+                                      target="_blank" 
+                                      style="color: inherit; text-decoration: none;">
+                                      ${d.word} (${formattedCount})
+                                   </a>`);
+                    });
+            }
 
             // Function to create row labels (Number of Characters)
             function createRowLabels(selector) {
                 const rowLabels = d3.select(selector);
                 for (let i = 1; i <= 24; i++) {
-                    rowLabels.append("div")
-                        .text(i);
+                    rowLabels.append("div").text(i);
                 }
             }
 
             // Function to create column labels (Rank)
             function createColumnLabels(selector) {
                 const columnLabels = d3.select(selector);
-
-                columnLabels.append("div") // Add a title label
-                    .attr("class", "column-title")
-                    .style("font-weight", "bold")
-                    .style("grid-column", "span 5") // Span all columns
-                    .style("text-align", "center")
-                    .style("margin-bottom", "5px")
-                    .text("Rank");
+                columnLabels.append("div").attr("class", "column-title")
+                    .style("font-weight", "bold").style("grid-column", "span 5")
+                    .style("text-align", "center").text("");
 
                 for (let i = 1; i <= 5; i++) {
-                    columnLabels.append("div")
-                        .text(`Rank: ${i}`);
+                    columnLabels.append("div").text(`Rank: ${i}`);
                 }
             }
 
@@ -199,13 +226,9 @@
             createColumnLabels("#to-column-labels");
 
             // Draw grids with separate color scales
-            drawGrid("#from-grid", fromWords, fromColorScale);
-            drawGrid("#to-grid", toWords, toColorScale);
+            drawGrid("#from-grid", fromWords, fromColorScale, "from");
+            drawGrid("#to-grid", toWords, toColorScale, "to");
         });
-
-
-
     </script>
 </body>
-
 </html>
