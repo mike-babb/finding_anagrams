@@ -111,7 +111,7 @@
     <div class="grid-container">
         <!-- From Grid -->
         <div class="grid-wrapper">
-            <h3>Click to see PARENT words of:</h3>
+            <h3>Click to see (in a new tab) PARENT words of:</h3>
 
             <div class="grid-header">
                 <div class="row-label-placeholder"></div>
@@ -129,7 +129,7 @@
 
         <!-- To Grid -->
         <div class="grid-wrapper">
-            <h3>Click to see CHILD words of:</h3>
+            <h3>Click to see (in a new tab) CHILD words of:</h3>
 
             <div class="grid-header">
                 <div class="row-label-placeholder"></div>
@@ -148,7 +148,7 @@
 
     <script>
         // Load the JSON data
-        d3.json("word_groups.json").then(data => {
+        d3.json("words.json").then(data => {
             // Separate "from" and "to" words
             const fromWords = data.filter(d => d.direction === "from");
             const toWords = data.filter(d => d.direction === "to");

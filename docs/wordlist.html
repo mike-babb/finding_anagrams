@@ -75,7 +75,7 @@
                 return;
             }
 
-            const filePath = `/webpage/wordlists/${direction}/${selectedWord}.json`;
+            const filePath = `/docs/wordlists/${direction}/${selectedWord}.json`;
 
             fetch(filePath)
                 .then(response => {
@@ -97,7 +97,7 @@
                     let directionText = direction === "from" ? "Parent words of" : "Child words of";
 
                     let content = `
-    <h2>${directionText} "${data.word}" (${direction.toUpperCase()})</h2>
+    <h2>${directionText} "${data.word}"</h2>
     <p>Word Count: ${data.number_of_words.toLocaleString()}</p>`;
 
                     Object.keys(groupedWords)
