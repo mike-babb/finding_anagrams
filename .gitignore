@@ -47,7 +47,12 @@ itch.ipynb
 Untitled*.ipynb
 untitled*.ipynb
 
-# machine specific configuation files
+
+# Miscellaneous Files #
+#######################
+test_char_matrix.ipynb
+
+# machine specific configuration files
 .vscode/launch.json
 .vscode/settings.json
 .vscode/tasks.json
