@@ -1,5 +1,5 @@
 # Finding Anagrams: v2.0
-# March 26, 2025
+## March 27, 2025
 Find and store parent/child word relationships using Python, NumPy, Pandas, and SQLite
 
 # Introduction
@@ -47,7 +47,6 @@ Each matrix extraction option is described in greater detail below. Where applic
 
 These colors were created by [Professor Cynthia Brewer](https://www.geog.psu.edu/directory/cynthia-brewer) and originate from the [Dark2 color theme](https://colorbrewer2.org/#type=qualitative&scheme=Dark2&n=3).  
 
-
 ## Matrix Extraction Option 1 - No subdivision
 By subtracting each row (a focal word) of the `char_matrix` from every other row of the `char_matrix` and finding non-negative values for each operation, the parent words for a focal word are identified. This is the simplest option to implement and the slowest because each word is compared against $215,842$ other words. This is effectively performing $~216K * ~216K$ comparisons. Accordingly, this option takes approximately $90$ minutes to complete. While the `char_matrix` creates a standard format for each word, there are latent structures in our list of words that we can leverage. To that end, [part_01_structure_data.ipynb](/code/part_01_structure_data.ipynb) uncovers these latent structures: the number of characters in each word and the frequency of each character in our list of words. Matrix extraction options `2` through `6` leverage these latent structures by splitting the `char_matrix` into smaller $[M, 26]$ matrices. 
 
@@ -88,7 +87,7 @@ Repeating this process of selecting the three least common letters for each of t
 
 The letter selector groups range in size from a single word to over $145K$ words. We can get a better sense of the distribution of the sizes of the letter selector groups by examining the plot comparing the number of letter selector groups by the size of the letter selector group:  
 ![Letter selector difference](/graphics/meo_5_letter_selector_group_size.png)
-For ease of interpretation, the x-axis is log-transformed. Most letter groups are small: $25$ -percent of the $2,387$ distinct letter groups feature $340$ words or fewer and $50$ -percent of the $2,387$ letter groups feature $1,665$ words or fewer. The average group size is a little over $7.4K$ words. Grouping by least common letters is an efficient way to sub-divide the initial `char_matrix`. In fact, it is so efficient that matrix extraction option `5` executes in under four minutes. This is over $10$ times faster when compared to Option `3` ($31$ minutes) and over $5$ times faster than option `4` ($15$ minutes). And this is because of the reduction in the search spaces of candidate words. When comparing option `5` with option `3`, there is a [$92$ -percent](/graphics/meo_5_letter_selector_lookup_diff.png) reduction in the size of the search spaces.
+For ease of interpretation, the x-axis is log-transformed. Most letter groups are small: $25$ -percent of the $2,387$ distinct letter groups feature $340$ words or fewer and $50$ -percent of the $2,387$ letter groups feature $1,665$ words or fewer. The average group size is a little over $7.4K$ words. Grouping by least common letters is an efficient way to sub-divide the initial `char_matrix`. In fact, it is so efficient that matrix extraction option `5` executes in under four minutes. This is over $10$ times faster when compared to Option `3` ($31$ minutes) and over $5$ times faster than option `4` ($15$ minutes). And this is because of the reduction in the search spaces of candidate words: when comparing option `5` with option `3`, there is a [92-percent](/graphics/meo_5_letter_selector_lookup_diff.png) reduction in the size of the search spaces.
   
 ## Matrix Extraction Option 6: Matrices are sub-divided by groups of least common letters and number of characters
 Of the five previous matrix extraction options, option `5` is currently in first place. Can we improve on option `5`? The answer is a resounding *"yes, but..."* More on that in a bit, but first the method behind option `6`: a combination of word length and groups of least common letters. Option `6` performs additional subdivision by finding the set of words common between words that are at least $N$ characters in length *and* the groups of least common letters. This generates $16,101$ sub-matrices. Again, focusing on the word `achiever`, we can intersect the set of $489$ words that feature the three least common letters of `['v', 'h', 'c']` with the set of candidate words that are at least $8$ characters in length - $170,056$ words - to produce a list of $449$ candidate words. This process is repeated for all words. Just like for option `5`, we can get a sense of the distribution of the search space by examining the sizes of the letter-selector-number-of-characters groups.   
@@ -133,46 +132,44 @@ As the sizes of sub-matrices decrease, the number of sub-matrices increase. This
 
 As a final comment, up until this point, I have not have mentioned any timing related to generating the sub-matrices. For options `2` through `4`, it takes about $2$ seconds to generate the sub-matrices. Generating the sub-matrices for option `5` takes about $10$ seconds and it takes about a minute to generate the sub-matrices for option `6`. In other words, for option `5`, an extra $8$ seconds of pre-processing results in a time savings of $90$ minutes when compared with matrix extraction option `1`.
 
-# AN ETL PIPELINE
+# An ETL Pipeline
 This section describes each script in the ETL pipeline and the various scripts used to analyze different processing times. Parts 01, 02, and 03 form the ETL pipeline while other parts feature various components for code reuse and analyses.
 
-## SETUP
+## Setup
 The scripts in this portion define constants and functions used throughout subsequent processes.
 * [`_run_constants.py`](/code/_run_constants.py) - Input and output file names and paths. All subsequent scripts reference the paths defined in this file. Paths and names only need to be set once, in this file. 
 
-## UTILITIES
+## Utilities
 * [`part_00_file_db_utils.py`](/code/part_00_file_db_utils.py) - Code reuse for parts 01 through 07. These are mostly I/O and utility functions.
 * [`part_00_process_functions.py`](/code/part_00_process_functions.py) - Code reuse for parts 01 through 07. These functions perform the data processing and are called in subsequent parts. The reason for this structure is for code reuse, efficient optimization and debugging, and generally writing less code. Effectively, we can define the function once and import it.
 
-## EXTRACT
+## Extract
 * [`part_01_structure_data.ipynb`](/code/part_01_structure_data.ipynb) and [`part_01_structure_data.py`](/code/part_01_structure_data.py) - 
 Load a list of words, perform several calculations and data creation steps, and store the results. This step creates the objects that facilitate the different extraction techniques. In these notebooks, the word groups are determined. The input list of [words](/data/words.txt) features approximately $234K$ unique words. Of these $234K$ words, approximately $201K$ do not belong to a word group while approximately $14K$ words do belong a word group. Most words in the word groups belong to groups of size $2$. The words `abactor` and `acrobat` are anagrams of each other. There are two words groups of size 10: 
 
-## TRANSFORM
+## Transform
 * `part_02_demonstrate_extraction_timing_techniques.ipynb` and `part_02_demonstrate_extraction_timing_techniques.py` - The scripts in this section demonstrate the techniques - and crucial differences - in the different matrix extraction techniques in subsequent scripts.
 
-## LOAD
+## Load
 * `part_03_generate_and_store_anagrams.ipynb` and 
 `part_03_generate_and_store_anagrams.py*` - This script and notebook find the parent words for all words in the list of focal words using one of the user specified extraction options. The data can optionally be written to a SQLite DB.
 
 Each of the six techniques in part_03 will produce the same data - the discover of $\approx73M$ parent-child word pairs using different data structuring and access techniques. 
 
-## ETL
+## Complete ETL
 * `part_04_run_parts_01_02_and_03.ipynb` and `part_04_run_parts_01_02_and_03.py` can be used to run parts 01, 02, and 03 from one notebook / script. This is helpful in showcasing the overall time it takes to run one matrix extraction technique.
 
-## QUERY
-
+## Query
 * `part_05_query_anagram_database.ipynb` - query the anagram database. Show how to crosswalk from `word_group_id` to `word`.
 * `part_06_add_database_indices.ipynb` - adds indices to tables in the anagram database. This showcases how database indices can dramatically speed up data retrieval times: from minutes to query for a single word to sub-second access. This notebook only needs to be run after the `anagram_groups` table is (re)created. 
 
-## ANALYSIS
+## Analysis
 * `part_07_build_a_graph.ipynb` - build a graph of the parent/child word relationships after for the word `terminator`. 
 
-# VISUALIZATION
+# Visualization
 Both python (part 08) and R (part 09) are used to plot aspects of the search space and process times by matrix extraction technique. Parts 10 and 11 prepare data for use in a webpage. 
 
-## search spaces and processing times
-
+## Search Spaces and Processing Times
 * `part_08_plot_counts_of_search_spaces.ipynb` - use [`matplotlib`](https://matplotlib.org/) and [`seaborn`](https://seaborn.pydata.org/) to plot counts of search spaces and processing times. This file generates the `meo_*_.png` images, referenced and shown in the sections above
 
 * `part_09_visualize_processing_time.R` - Make graphics using the [`R programming language`](https://www.r-project.org/)! Because the data generated in parts 01, 02, and 03 are stored in a SQLiteDB, we can connect to the database using the [RSQLite](https://rsqlite.r-dbi.org) library and in turn load the data as a [data.table](https://rdatatable.gitlab.io/data.table/) object. From there, we can then use the [ggplot2](https://ggplot2.tidyverse.org/) library to produce several plots showcasing different aspects of the processing times and search space. In this case, all plots feature statistics by word length. As an example, the graphic below showcases the total time it takes to find all parent words by word length:
@@ -187,17 +184,16 @@ These two plots show how as the number of letters in a word increases, the numbe
 This last plot is similar to the graphic showing [sub-matrix size](/graphics/meo_all_box_plot_distribution.png) the search spaces by technique.
 * [wl_time_avg_proc_time.png](/graphics/wl_time_avg_proc_time.png) - the average processing time by word length and matrix extraction technique. 
 
-## word relationships
-
+## Word Relationships
 * [part_10_create_word_counts.ipynb](/code/part_10_create_word_counts.ipynb) - generate the data for a web page showing a grid of words with the greatest number of parent/child words by word length. Up until this point, I have only mentioned the words as a corpus but I have not really focused on any specific word. We have graphed search spaces and the number of parent/child words but we haven't looked any specific words. To that end, I have ranked each word based on the number of parent words and the number of child words by word length. I then selected the five words with the greatest number of parent words and the greatest number of child words by word length. As the words range in length of $1$ through $24$ letters, there are $120$ words showing the count of parent words and $120$ words showing the count of child words. There are $240$ words in total. This script generates one part of the data for the word group grid.  
 
 * [part_11_export_data_for_grids.ipynb](/code/part_11_export_data_for_grids.ipynb) - This notebook generates the parent and child words for the 240 words on the word grid. Clicking on each grid cell takes a user to the formatted list of parent or child words. This script generates that list. And here is the word group grid:
 * [word group grid](/webpage/word_group_grid.html) - Top 5 word groups by parent/child word count by word length. The counts of `from` words are on the left in shades of blue and the counts of `to` words are on the right in shades red. In general, as the word length increases, more child words can be created and a focal word can be found in fewer parent words. For example, the letter `e` can be found in over $157K$ words: over $67$ -percent of the words in the word list. In total, there are approximately $233K$ unique words identified in the list of $120$ child words, over $99$ -percent of all words. There are $101K$ parent words identified in the parent words section, about $43$ -percent of all words. Across the $120$ parent words, all but the letters `k` and `w` are present. Across the $120$ child words, all but the letters `q` and `w` are present. The word with the greatest number of child words is [pseudolamellibranchia](https://www.merriam-webster.com/dictionary/Pseudolamellibranchia). The letters in this $23$ -character word describing a group of bivalve mollusks can be rearranged to spell a whopping $32,456$ words. 
 
-# INTROSPECTION
+# Introspection
 This section focuses on tools to understand how the functions are referenced from one another and the time it takes to execute various functions. How do the functions in parts 00, 01, 02, and 03 come together? How long do the various components of each function take to execute? We can answer each question, respectively, by creating static call graphs and profiling.
 
-## CALL GRAPHS
+## Call Graphs
 According to [wikipedia](https://en.wikipedia.org/wiki/Call_graph), a call graph "is a control-flow graph which represents calling relationships between subroutines in a computer program." A static call graph represents the idealized flow of the program while a dynamic call graph represents what is *actually* called during a program's execution.
 
 * [part_12_generate_call_graphs.bat](/code/part_12_generate_call_graphs.bat) generates static call graphs. One in the *.svg format:
@@ -215,7 +211,7 @@ pip install pyan3==1.1.1
 ```
 After this environment has been created, activate the `py38` environment and run the batch file listed above. 
 
-## PROFILING
+## Profiling
 [Profiling](https://en.wikipedia.org/wiki/Profiling_(computer_programming)) measures execution time and complexity. This is exceptionally useful when looking at which parts of a program are taking longer than expected or just understanding how long things take. The three batch files below can be executud from the Anaconda Powershell prompt with the same activated environment as the environment used to run parts 01, 02, and 03.
 
 * [profile_part_01_structure_data.bat](/code/profile_part_01_structure_data.bat)
@@ -237,7 +233,6 @@ I have already done a fair amount of optimizing on each part so most of the easy
 ![part 02 profile](/graphics/part_02_profile_example.png)  
 This image shows the time taken to perform [set intersections](https://docs.python.org/3/library/stdtypes.html#frozenset.intersection) in the split_matrix() function. This corresponds to matrix extraction option `6`: sub-matrices are split by word-length and three least common letters. Finding the word ids of words that at least $N$ letters in length and feature a specific set of three least common letters is accomplished through the `set().intersection` method. This method is very fast: it's just being called thousands of times.
 
-# VERSION 3.0
-
+# Version 3.0
 If you've made it this far, first, thank you. Second, if you see some room for improvement, please do let me know. I would love to hear from you if you have any thoughts on an additional matrix extraction technique or suggestions on how to improve the existing matrix extraction techniques. I do wonder if it would be possible to get the parent-child word determination down to under a minute. That might be a wholly different technique or a different hardware implementation such as using a [GPU-accelerated version of NumPY](https://cupy.dev/).
 
