@@ -37,7 +37,7 @@
             display: none;
             padding: 10px;
             background-color: #f4f4f4;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid Grey;
             margin-top: 5px;
             border-radius: 5px;
         }
@@ -107,8 +107,7 @@
                             const wordCount = groupedWords[length].length;
                             // let formattedCount = group.count.toLocaleString(); // Format number with commas
                             let formattedCount = wordCount.toLocaleString();
-                            let barColor = direction === "from" ? "blue" : "red"; // Set color based on direction
-
+                            
                             let headerColor = direction === "from" ? "#3498db" : "#b73838"; // Blue for "from", Red for "to"
 
                             content += `

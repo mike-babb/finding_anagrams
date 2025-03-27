@@ -29,6 +29,23 @@ if(!dir.exists(output_path)){
   dir.create(output_path)
 }
 
+####
+# COLOR CONSTANTS
+####
+
+color_values <- brewer.pal(n = 6, name = 'Dark2')
+color_labels <- c(
+  "ME 01: Full Matrix",
+  "ME 02: Word Length",
+  "ME 03: First Letter",
+  "ME 04: Single LC Letter",
+  "ME 05: Three LC Letters",
+  "ME 06: Word Length & Three LC Letters")
+
+from_color <- "#3498db" 
+to_color <- "#b73838"
+
+
 
 ####
 # PART 1: LOAD DATA FROM SQLITE
@@ -172,7 +189,7 @@ y_limits <- range(y_breaks)
 my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color = me_factor)) +
   geom_line(linewidth = 1.5) + 
   geom_point(size = 2) +
-  ggtitle(label = 'Total Time To Find Parent Words By Word Length And Processing Technique') +
+  ggtitle(label = 'Total Time To Find Parent Words By Word Length And Matrix Extraction Technique') +
   scale_color_manual(values = my_colors, labels = tt_df$nice_label_format) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(df_agg$n_chars)),
@@ -183,7 +200,8 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = tot_proc_time_minutes, color =
                      labels = y_labels,
                      limits = y_limits) +
   guides(color = guide_legend(title = 'Matrix Extraction Technique\n(total time)')) +
-  theme_bw()
+  theme_bw() + 
+  theme(legend.position = "bottom")
 
 # check the plot
 my_plot
@@ -213,7 +231,7 @@ y_limits <- range(y_breaks)
 my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_factor)) +
   geom_point(size=1.5) + 
   geom_line(linewidth=2) +
-  ggtitle(label = 'Average Time To Find Anagrams By Word Length And Processing Technique') +
+  ggtitle(label = 'Average Time To Find Anagrams By Word Length And Matrix Extraction Technique') +
   scale_color_manual(values = my_colors) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(df_agg$n_chars)),
@@ -224,10 +242,12 @@ my_plot <- ggplot(data=df_agg, aes(x=n_chars, y = mean_proc_time, color = me_fac
                      labels = y_labels,
                      limits = y_limits) +
   guides(color = guide_legend(title = 'Processing\nTechnique')) +
-  theme_bw()
+  theme_bw() + 
+  theme(legend.position = "bottom")
 
 # check the plot
 my_plot
+
 
 # save the plot
 file_name <- 'wl_time_avg_proc_time.png'
@@ -290,7 +310,7 @@ my_colors <- RColorBrewer::brewer.pal(n=meo_count, name = 'Dark2')
 my_plot <- ggplot(data=melt_sdf_agg, aes(x=n_chars, y = mean_comp_words, color = matrix_extraction_option_factor)) +
   geom_point(size=1.5) + 
   geom_line(linewidth=2) +
-  ggtitle(label = 'Average Number of Candidate Words By Word Length And Processing Technique') +
+  ggtitle(label = 'Average Number of Candidate Words By Word Length And Matrix Extraction Technique') +
   scale_color_manual(values = my_colors) + 
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(melt_sdf_agg$n_chars)),
@@ -301,7 +321,8 @@ my_plot <- ggplot(data=melt_sdf_agg, aes(x=n_chars, y = mean_comp_words, color =
                      labels = y_labels,
                      limits = y_limits) +
   guides(color = guide_legend(title = 'Processing\nTechnique')) +
-  theme_bw()
+  theme_bw() + 
+  theme(legend.position = 'bottom')
 
 my_plot
 
@@ -346,10 +367,12 @@ y_breaks <- seq(0, 70000, 10000)
 y_labels <- formatC(x = y_breaks, digits = 0, format = 'f',big.mark = ',')
 y_limits <- range(y_breaks)
 
-
-my_plot <- ggplot(data=df_melt, aes(x=n_chars, y = value)) +
+my_plot <- ggplot(data=df_melt,
+                  aes(x=n_chars, y = value, color = word_stat_factor)) +
   geom_point(size=1.5) + 
   geom_line(linewidth=2) +
+  scale_color_manual(values = c('Avg. From Words' = from_color, 
+                                'Avg. To Words' = to_color)) +
   ggtitle(label = 'Average Number of From/To Words By Word Length') +
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(df_agg$n_chars)),
@@ -358,7 +381,9 @@ my_plot <- ggplot(data=df_melt, aes(x=n_chars, y = value)) +
   scale_y_continuous(name = 'Average Number of From/To Words', label = comma) +
   guides(color = guide_legend(title = 'From/To\nRelationship')) +
   theme_bw() +
-  facet_grid(rows = vars(word_stat_factor), scales = 'free')
+  facet_grid(rows = vars(word_stat_factor), scales = 'free') + 
+  theme(legend.position = "none",  strip.background = element_rect(fill = 'white')) 
+
 
 my_plot
   
@@ -416,18 +441,21 @@ w_melt_df[, group_direction_factor := factor(x = group_direction,
                                              ordered = TRUE)]
 
 
-my_plot <- ggplot(data=w_melt_df, aes(x=n_chars, y = word_groups, group = n_chars)) +
-  geom_boxplot() + 
-  ggtitle(label = 'Number of Words By Word Length') +
+my_plot <- ggplot(data=w_melt_df, aes(x=n_chars, y = word_groups, group = n_chars, fill = group_direction_factor)) +
+  geom_boxplot(outlier.color =  "#646464", outlier.size = .5, outlier.shape = 19, outlier.alpha = .25) +
+  ggtitle(label = 'Number of From/To Words By Word Length') +
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(w_melt_df$n_chars)),
                    labels = factor((seq(1,max(w_melt_df$n_chars)))),
-                   limits = factor(seq(1, max(w_melt_df$n_chars)))) +
+                   limits = factor(seq(1, max(w_melt_df$n_chars)))
+                   ) +
+  scale_fill_manual(values = c('From words' = from_color,
+                               'To words' = to_color)) + 
   scale_y_continuous(name = 'Number of Words',breaks = y_breaks,
                      labels = y_labels) +
-  
   theme_bw() + 
-  facet_grid(rows = w_melt_df$group_direction_factor, scales = 'fixed')
+  facet_grid(rows = w_melt_df$group_direction_factor, scales = 'fixed') +
+  theme(strip.background = element_rect(fill = 'white'), legend.position = "none")
 
 my_plot
 
@@ -454,18 +482,18 @@ y_labels <- formatC(x = y_breaks, digits = 0, format = 'f',big.mark = ',')
 y_limits <- range(y_breaks)
 y_labels
 
-head(wdf)
-
-my_plot <- ggplot(data=wdf, aes(x=n_chars, y = n_candidates, group = n_chars)) +
-  geom_boxplot() + 
-  ggtitle(label = 'Number of Candidates') +
+my_plot <- ggplot(data=wdf, aes(x=n_chars, y = n_candidates, group = n_chars, fill = matrix_extraction_option_factor)) +
+  geom_boxplot(outlier.color =  "#646464", outlier.size = .5, outlier.shape = 19, outlier.alpha = .25) +
+  ggtitle(label = 'Number of Candidate Words by Word Length and Matrix Extraction Technique') +
   scale_x_discrete(name = 'Word length (# of Characters)',
                    breaks = seq(1,max(df_agg$n_chars)),
                    labels = factor((seq(1,max(df_agg$n_chars)))),
                    limits = factor(seq(1, max(df_agg$n_chars)))) +
+  scale_fill_manual(values = color_values, labels = color_labels) + 
   scale_y_continuous(name = 'Number of candidates', label = comma) +
   theme_bw()  +
-  facet_grid(rows = vars(matrix_extraction_option_factor), scales = 'free')
+  facet_grid(rows = vars(matrix_extraction_option_factor), scales = 'free') + 
+  theme(legend.position = "none", strip.background = element_rect(fill = 'white'))
 
 my_plot
 
@@ -509,8 +537,8 @@ t5_to_df[, direction := 'to']
 t5_df <- rbind.data.frame(t5_from_df, t5_to_df)
 head(t5_df)
 
-# plot time
 
+# check the plot
 my_plot <- ggplot(data = t5_df, mapping = aes(x = n_chars, y = n_rank, size = n_word_groups)) + 
   geom_point() +
   geom_text(aes(label = lcase), vjust = -1, size = 3) + 
