@@ -96,7 +96,7 @@ if __name__ == '__main__':
     n_subset_letters = 3
 
     # set write_data to True to store the generated list of anagrams
-    write_data = True
+    write_data = False
 
     # Testing options
     # None to include all letters

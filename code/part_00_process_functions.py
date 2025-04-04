@@ -503,6 +503,7 @@ def format_demo_output(demo_word: str, word_df: pd.DataFrame, demo_output: np.nd
 def get_values_full_matrix(
     wg_id: int, wchar_matrix: np.ndarray, word_group_id_list: np.ndarray
 ):
+        
     # matrix extraction option 1
 
     outcome = wchar_matrix - wchar_matrix[wg_id,]
@@ -519,6 +520,7 @@ def get_values_full_matrix(
     )
 
     return output_list
+
 
 
 def get_values_n_char(wg_id: int, n_char: int, n_char_matrix_dict: dict):
