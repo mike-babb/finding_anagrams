@@ -152,6 +152,28 @@ def write_data_to_sqlite(df:pd.DataFrame, table_name:str, db_path:str, db_name:s
     return None
 
 
+# let's convert to total hours, total minutes, and total seconds
+def get_hms(seconds:float, round_seconds_digits:int = 0, as_string:bool = True):
+    # convert seconds to total hours, minutes, and seconds
+    # for example: 3661 seconds is 1 hour, 1 minute, 1 second
+    # whole hours
+    hours = int(seconds // 3600)
+    minutes = int((seconds - (hours * 3600)) // 60)
+    remaining_seconds = seconds - ((hours * 3600) + (minutes * 60))
+    
+    remaining_seconds = round(remaining_seconds, round_seconds_digits)
+    if round_seconds_digits == 0:
+        remaining_seconds = int(remaining_seconds)
+    
+    if as_string:
+        hours = str(hours)
+        minutes = str(minutes)
+        remaining_seconds = str(remaining_seconds)
+
+    return hours, minutes, remaining_seconds
+    
+
+
 if __name__ == "__main__":
     # simple test, query the first 10 words
     sql = "select * from words limit 10;"
