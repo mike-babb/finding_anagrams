@@ -9,7 +9,7 @@ A previous version of this workshop made use of individual words. This version m
 
 This workshop is built for people new to python and progresses to demonstrations of advanced data processing techniques. To that end, there are six different data processing techniques - referred to as matrix extraction options throughout the workshop - that demonstrate how processing the same data can take over $90$ minutes or about $3$ minutes. Each of the six different processing techniques produce the same output: the discovery of over $73M$ parent/child word pairs. 
 
-**As as example of these relationships, see [word group grid](/media/finding_anagrams/word_grid.html) for the top 5 parent words and top 5 child words by word length.**
+**As as example of these relationships, see [word group grid](https://mike-babb.github.io/media/finding_anagrams/word_grid.html) for the top 5 parent words and top 5 child words by word length.**
 
 Where applicable, there are Jupyter Notebooks and python scripts that demonstrate the same process flow. The notebooks are more interactive while the python scripts can be run from the command line. The notebooks for parts 01, 02, and 03 make use of functions written in the corresponding scripts for parts 01, 02, and 03. In general, the notebooks and scripts start out less complex and become more complex. For example, part 01 features more interactivity (calls to `print()` and `pd.DataFrame.head()`) and descriptions of operations and objects ([python dictionaries](https://docs.python.org/3/tutorial/datastructures.html) and [NumPy arrays](https://numpy.org/doc/stable/reference/generated/numpy.array.html), for example) than part 03. Each part builds upon the previous part(s).
 
