@@ -1181,8 +1181,29 @@ def build_list_of_child_words(word_group_id: int, db_path: str, db_name: str):
 
     return cw_df
 
+def build_timing_and_output_objects(output_time_list:list, ls_df:pd.DataFrame) -> pd.DataFrame:
+    
+    col_names =['letter_selector_id', 'n_search_space', 'total_time']
+    time_df = pd.DataFrame(data = output_time_list, columns=col_names)
+    get_hms(seconds = time_df['total_time'].sum(),round_seconds_digits=4)
+    # join in the other information
+    time_df = pd.merge(left = time_df, right = ls_df)
 
+    time_df['avg_lookup_time'] = time_df['total_time'] / (time_df['ls_count'] * time_df['n_search_space'])
 
+    return time_df   
+
+def build_letter_selector_df(df:pd.DataFrame,
+                          ls_nchar:int, col_names:str,
+                          letter_selector_col_name:str,                          
+                          letter_selector_id_col_name:str):
+    df[letter_selector_col_name] = df['letter_group_ranked'].str[:ls_nchar]    
+    ls_df = df[col_names].groupby(col_names[:-1]).agg(ls_count = ('n_records', 'sum')).reset_index()    
+    ls_df['ls_nchar_iter'] = ls_nchar
+    ls_df['ls_nchar'] = ls_df[letter_selector_col_name].str.len()
+    ls_df[letter_selector_id_col_name] = range(0, ls_df.shape[0])
+
+    return ls_df
 
 if __name__ == "__main__":
     # gotta do something...
