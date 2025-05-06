@@ -72,7 +72,7 @@ def get_hms(seconds:float, round_seconds_digits:int = 0, as_string:bool = True):
 
     return hours, minutes, remaining_seconds
     
-def compute_elapase_time(seconds:float):
+def compute_elapsed_time(seconds:float):
     hours, minutes, seconds = get_hms(seconds=seconds, round_seconds_digits=8, as_string=False)
     print(f"Hours: {hours} | minutes: {minutes} | seconds: {seconds}")
     
