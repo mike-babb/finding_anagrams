@@ -1194,16 +1194,24 @@ def build_timing_and_output_objects(output_time_list:list, ls_df:pd.DataFrame) -
     return time_df   
 
 def build_letter_selector_df(df:pd.DataFrame,
-                          ls_nchar:int, col_names:str,
+                          ls_nchar:int,
                           letter_selector_col_name:str,                          
-                          letter_selector_id_col_name:str):
-    df[letter_selector_col_name] = df['letter_group_ranked'].str[:ls_nchar]    
+                          letter_selector_id_col_name:str,
+                          create_letter_selector:bool = True):
+    if create_letter_selector:
+        df[letter_selector_col_name] = df['letter_group_ranked'].str[:ls_nchar]
+
+    if 'n_records' not in df.columns:
+        df['n_records'] = int(1)
+
+    col_names = [letter_selector_col_name, 'n_records']        
     ls_df = df[col_names].groupby(col_names[:-1]).agg(ls_count = ('n_records', 'sum')).reset_index()    
     ls_df['ls_nchar_iter'] = ls_nchar
     ls_df['ls_nchar'] = ls_df[letter_selector_col_name].str.len()
     ls_df[letter_selector_id_col_name] = range(0, ls_df.shape[0])
 
     return ls_df
+
 
 if __name__ == "__main__":
     # gotta do something...
