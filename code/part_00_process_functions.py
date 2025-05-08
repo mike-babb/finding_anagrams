@@ -466,7 +466,7 @@ def compute_lookups(wg_df: pd.DataFrame,
 
 
 def format_output_list(outcome_word_id_list: np.ndarray, wg_id: int) -> np.ndarray:
-    output_list = np.zeros(shape=(outcome_word_id_list.shape[0], 2), dtype=int)
+    output_list = np.zeros(shape=(outcome_word_id_list.shape[0], 2), dtype=np.int32)
 
     # update the output list with the word_id_list - these are from/parent words
     output_list[:, 0] = outcome_word_id_list
