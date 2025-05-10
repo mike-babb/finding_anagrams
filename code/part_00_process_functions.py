@@ -1212,6 +1212,17 @@ def build_letter_selector_df(df:pd.DataFrame,
 
     return ls_df
 
+# function to return the index position of each letter
+def get_ls_index(df:pd.DataFrame, letter_selector_col_name:str = 'letter_selector', data_path:str = rc.DATA_OUTPUT_FILE_PATH):
+    # load the letter dictionary from part 1
+    print("...loading the letter dictionary...")
+    in_file_name = "letter_dict.pkl"
+    letter_dict = load_pickle(
+        in_file_path=data_path, in_file_name=in_file_name)
+    
+    df['ls_index'] = df[letter_selector_col_name].map(lambda x: [letter_dict[ls] for ls in x])
+
+    return df
 
 if __name__ == "__main__":
     # gotta do something...
