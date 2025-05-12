@@ -710,7 +710,8 @@ def load_possible_anagrams(db_path: str, db_name: str) -> pd.DataFrame:
     ) / 2
 
     # round and convert to integer
-    n_possible_anagrams = int(np.round(n_possible_anagrams, 0))
+    # divide by 2, as this is still larger than what we need. 
+    n_possible_anagrams = int(np.round(n_possible_anagrams / 2, 0))
 
     return n_possible_anagrams
 
@@ -1220,9 +1221,35 @@ def get_ls_index(df:pd.DataFrame, letter_selector_col_name:str = 'letter_selecto
     letter_dict = load_pickle(
         in_file_path=data_path, in_file_name=in_file_name)
     
-    df['ls_index'] = df[letter_selector_col_name].map(lambda x: [letter_dict[ls] for ls in x])
+    # build an array of true-false values. This is more data, but 
+    # it is all the same size and shape
+    def build_true_false_index(ls:str):
+        outcome_list = np.zeros(shape = (26,), dtype = np.bool)
+        for curr_ls in ls:
+            outcome_list[letter_dict[curr_ls]] = True
+        return outcome_list
+    
+    df['ls_index'] = df[letter_selector_col_name].map(build_true_false_index)
 
     return df
+
+def build_ls_index_arrays(wg_df:pd.DataFrame, ls_df:pd.DataFrame, letter_selector_col_name:str = 'letter_selector_id'):
+    ls_id_wg_id = wg_df[['letter_selector_id', 'word_group_id']].to_numpy()
+    ls_index_array = np.array(ls_df['ls_index'].to_list())
+    return ls_id_wg_id, ls_index_array
+
+def build_counters(output_list:np.ndarray):
+
+    # count using numpy, and then create a Counter object
+    from_word_counter = np.unique(ar = output_list[:, 1], return_counts=True)
+    to_word_counter = np.unique(ar = output_list[:, 0], return_counts=True)
+    # this used to take 45 seconds, it now takes 6
+    from_word_counter = collections.Counter({wg_id:wg_count for wg_id, wg_count in zip(*from_word_counter)})
+    to_word_counter = collections.Counter({wg_id:wg_count for wg_id, wg_count in zip(*to_word_counter)})
+
+    return from_word_counter, to_word_counter
+
+
 
 if __name__ == "__main__":
     # gotta do something...
