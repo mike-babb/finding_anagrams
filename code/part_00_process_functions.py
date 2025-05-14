@@ -21,7 +21,9 @@ import _run_constants as rc
 from part_00_file_db_utils import *
 
 
-def load_input_data(data_path: str = rc.DATA_OUTPUT_FILE_PATH, db_path=rc.DB_PATH, db_name: str = rc.DB_NAME, in_file_path: str = rc.IN_FILE_PATH) -> pd.DataFrame:
+def load_input_data(data_path: str = rc.DATA_OUTPUT_FILE_PATH, db_path=rc.DB_PATH,
+                    db_name: str = rc.DB_NAME, in_file_path: str = rc.IN_FILE_PATH,
+                    change_data_types:bool = False) -> pd.DataFrame:
 
     # load the word_df, the words from Part 1
     print("...loading words into a dataframe...")
@@ -53,6 +55,12 @@ def load_input_data(data_path: str = rc.DATA_OUTPUT_FILE_PATH, db_path=rc.DB_PAT
 
     # trim the char matrix by word id and not the word_group id
     wchar_matrix = char_matrix[word_id_list, :]
+
+    if change_data_types:
+        char_matrix = char_matrix.astype(np.int8)
+        word_group_id_list = word_group_id_list.astype(np.int32)
+        word_id_list = word_id_list.astype(np.int32)
+        wchar_matrix = wchar_matrix.astype(np.int8)
 
     return (
         word_df,
@@ -466,7 +474,8 @@ def compute_lookups(wg_df: pd.DataFrame,
 
 
 def format_output_list(outcome_word_id_list: np.ndarray, wg_id: int) -> np.ndarray:
-    output_list = np.zeros(shape=(outcome_word_id_list.shape[0], 2), dtype=np.int32)
+    output_list = np.zeros(
+        shape=(outcome_word_id_list.shape[0], 2), dtype=np.int32)
 
     # update the output list with the word_id_list - these are from/parent words
     output_list[:, 0] = outcome_word_id_list
@@ -503,7 +512,7 @@ def format_demo_output(demo_word: str, word_df: pd.DataFrame, demo_output: np.nd
 def get_values_full_matrix(
     wg_id: int, wchar_matrix: np.ndarray, word_group_id_list: np.ndarray
 ):
-        
+
     # matrix extraction option 1
 
     outcome = wchar_matrix - wchar_matrix[wg_id,]
@@ -520,7 +529,6 @@ def get_values_full_matrix(
     )
 
     return output_list
-
 
 
 def get_values_n_char(wg_id: int, n_char: int, n_char_matrix_dict: dict):
@@ -710,7 +718,7 @@ def load_possible_anagrams(db_path: str, db_name: str) -> pd.DataFrame:
     ) / 2
 
     # round and convert to integer
-    # divide by 2, as this is still larger than what we need. 
+    # divide by 2, as this is still larger than what we need.
     n_possible_anagrams = int(np.round(n_possible_anagrams / 2, 0))
 
     return n_possible_anagrams
@@ -984,8 +992,9 @@ def store_anagram_pairs(
         if next_bp % 10000000 == 0:
             print("...commiting changes:", "{:,}".format(next_bp), "records")
             db_conn.commit()
-            # calculate the current time to write 10M records            
-            curr_db_write_time_proc = calc_time(time_start=curr_db_write_time_start, round_digits=8)            
+            # calculate the current time to write 10M records
+            curr_db_write_time_proc = calc_time(
+                time_start=curr_db_write_time_start, round_digits=8)
 
             # save this value
             db_write_time_list.append(curr_db_write_time_proc)
@@ -999,14 +1008,14 @@ def store_anagram_pairs(
             add_seconds = datetime.timedelta(seconds=elapsed_time)
 
             # TODO Fix this right here
-            #eta_write_complete = db_write_time_start + add_seconds
-            #eta_write_complete = eta_write_complete.strftime(format="%m/%d/%Y, %H:%M:%S")
+            # eta_write_complete = db_write_time_start + add_seconds
+            # eta_write_complete = eta_write_complete.strftime(format="%m/%d/%Y, %H:%M:%S")
 
             mean_write_time = round(mean_write_time, 2)
             print(
                 "...average write time per 10M records:", mean_write_time, "seconds..."
             )
-            #print("...estimated write complete time:", eta_write_complete)
+            # print("...estimated write complete time:", eta_write_complete)
 
             # restart the current write time
             curr_db_write_time_start = perf_counter_ns()
@@ -1016,10 +1025,10 @@ def store_anagram_pairs(
         len(curr_output_list)), "records")
     db_conn.commit()
 
-    # compute total write times    
+    # compute total write times
     print("...writing to db took:")
-    compute_total_time(total_time_start = db_write_time_start)   
-    
+    compute_total_time(total_time_start=db_write_time_start)
+
     del curr_output_list
 
     # close connection objects
@@ -1146,6 +1155,7 @@ def build_list_of_parent_words(word_group_id: int, db_path: str, db_name: str):
 
     return pw_df
 
+
 def build_list_of_child_words(word_group_id: int, db_path: str, db_name: str):
 
     # build the list of parent words
@@ -1159,7 +1169,7 @@ def build_list_of_child_words(word_group_id: int, db_path: str, db_name: str):
 
     cw_df = pd.merge(left=word_df, right=cwg_df)
     print(cw_df.shape)
-    
+
     print(cw_df.tail())
 
     # let's add information to highlight the focal word
@@ -1167,11 +1177,10 @@ def build_list_of_child_words(word_group_id: int, db_path: str, db_name: str):
 
     id_df = cw_df.loc[cw_df['from_word_group_id']
                       == word_group_id, col_names].copy()
-    #print(id_df.head())
-    
+    # print(id_df.head())
 
     id_df.columns = ['from_word_group_id', 'from_word_id', 'from_word']
-    cw_df = pd.merge(left=cw_df, right=id_df)  
+    cw_df = pd.merge(left=cw_df, right=id_df)
 
     col_names = ['from_word_id', 'to_word_id',
                  'from_word_group_id', 'to_word_group_id',
@@ -1182,31 +1191,35 @@ def build_list_of_child_words(word_group_id: int, db_path: str, db_name: str):
 
     return cw_df
 
-def build_timing_and_output_objects(output_time_list:list, ls_df:pd.DataFrame) -> pd.DataFrame:
-    
-    col_names =['letter_selector_id', 'n_search_space', 'total_time']
-    time_df = pd.DataFrame(data = output_time_list, columns=col_names)
-    get_hms(seconds = time_df['total_time'].sum(),round_seconds_digits=4)
+
+def build_timing_and_output_objects(output_time_list: list, ls_df: pd.DataFrame) -> pd.DataFrame:
+
+    col_names = ['letter_selector_id', 'n_search_space', 'total_time']
+    time_df = pd.DataFrame(data=output_time_list, columns=col_names)
+    get_hms(seconds=time_df['total_time'].sum(), round_seconds_digits=4)
     # join in the other information
-    time_df = pd.merge(left = time_df, right = ls_df)
+    time_df = pd.merge(left=time_df, right=ls_df)
 
-    time_df['avg_lookup_time'] = time_df['total_time'] / (time_df['ls_count'] * time_df['n_search_space'])
+    time_df['avg_lookup_time'] = time_df['total_time'] / \
+        (time_df['ls_count'] * time_df['n_search_space'])
 
-    return time_df   
+    return time_df
 
-def build_letter_selector_df(df:pd.DataFrame,
-                          ls_nchar:int,
-                          letter_selector_col_name:str,                          
-                          letter_selector_id_col_name:str,
-                          create_letter_selector:bool = True):
+
+def build_letter_selector_df(df: pd.DataFrame,
+                             ls_nchar: int,
+                             letter_selector_col_name: str,
+                             letter_selector_id_col_name: str,
+                             create_letter_selector: bool = True):
     if create_letter_selector:
         df[letter_selector_col_name] = df['letter_group_ranked'].str[:ls_nchar]
 
     if 'n_records' not in df.columns:
         df['n_records'] = int(1)
 
-    col_names = [letter_selector_col_name, 'n_records']        
-    ls_df = df[col_names].groupby(col_names[:-1]).agg(ls_count = ('n_records', 'sum')).reset_index()    
+    col_names = [letter_selector_col_name, 'n_records']
+    ls_df = df[col_names].groupby(
+        col_names[:-1]).agg(ls_count=('n_records', 'sum')).reset_index()
     ls_df['ls_nchar_iter'] = ls_nchar
     ls_df['ls_nchar'] = ls_df[letter_selector_col_name].str.len()
     ls_df[letter_selector_id_col_name] = range(0, ls_df.shape[0])
@@ -1214,41 +1227,46 @@ def build_letter_selector_df(df:pd.DataFrame,
     return ls_df
 
 # function to return the index position of each letter
-def get_ls_index(df:pd.DataFrame, letter_selector_col_name:str = 'letter_selector', data_path:str = rc.DATA_OUTPUT_FILE_PATH):
+
+
+def get_ls_index(df: pd.DataFrame, letter_selector_col_name: str = 'letter_selector', data_path: str = rc.DATA_OUTPUT_FILE_PATH):
     # load the letter dictionary from part 1
     print("...loading the letter dictionary...")
     in_file_name = "letter_dict.pkl"
     letter_dict = load_pickle(
         in_file_path=data_path, in_file_name=in_file_name)
-    
-    # build an array of true-false values. This is more data, but 
+
+    # build an array of true-false values. This is more data, but
     # it is all the same size and shape
-    def build_true_false_index(ls:str):
-        outcome_list = np.zeros(shape = (26,), dtype = np.bool)
+    def build_true_false_index(ls: str):
+        outcome_list = np.zeros(shape=(26,), dtype=np.bool)
         for curr_ls in ls:
             outcome_list[letter_dict[curr_ls]] = True
         return outcome_list
-    
+
     df['ls_index'] = df[letter_selector_col_name].map(build_true_false_index)
 
     return df
 
-def build_ls_index_arrays(wg_df:pd.DataFrame, ls_df:pd.DataFrame, letter_selector_col_name:str = 'letter_selector_id'):
+
+def build_ls_index_arrays(wg_df: pd.DataFrame, ls_df: pd.DataFrame, letter_selector_col_name: str = 'letter_selector_id'):
     ls_id_wg_id = wg_df[['letter_selector_id', 'word_group_id']].to_numpy()
     ls_index_array = np.array(ls_df['ls_index'].to_list())
     return ls_id_wg_id, ls_index_array
 
-def build_counters(output_list:np.ndarray):
+
+def build_counters(output_list: np.ndarray):
 
     # count using numpy, and then create a Counter object
-    from_word_counter = np.unique(ar = output_list[:, 1], return_counts=True)
-    to_word_counter = np.unique(ar = output_list[:, 0], return_counts=True)
+    from_word_counter = np.unique(ar=output_list[:, 1], return_counts=True)
+    to_word_counter = np.unique(ar=output_list[:, 0], return_counts=True)
     # this used to take 45 seconds, it now takes 6
-    from_word_counter = collections.Counter({wg_id:wg_count for wg_id, wg_count in zip(*from_word_counter)})
-    to_word_counter = collections.Counter({wg_id:wg_count for wg_id, wg_count in zip(*to_word_counter)})
+    from_word_counter = collections.Counter(
+        {wg_id: wg_count for wg_id, wg_count in zip(*from_word_counter)})
+    to_word_counter = collections.Counter(
+        {wg_id: wg_count for wg_id, wg_count in zip(*to_word_counter)})
 
     return from_word_counter, to_word_counter
-
 
 
 if __name__ == "__main__":
