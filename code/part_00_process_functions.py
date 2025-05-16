@@ -23,7 +23,7 @@ from part_00_file_db_utils import *
 
 def load_input_data(data_path: str = rc.DATA_OUTPUT_FILE_PATH, db_path=rc.DB_PATH,
                     db_name: str = rc.DB_NAME, in_file_path: str = rc.IN_FILE_PATH,
-                    change_data_types:bool = False) -> pd.DataFrame:
+                    change_data_types:bool = True) -> pd.DataFrame:
 
     # load the word_df, the words from Part 1
     print("...loading words into a dataframe...")
@@ -49,9 +49,9 @@ def load_input_data(data_path: str = rc.DATA_OUTPUT_FILE_PATH, db_path=rc.DB_PAT
 
     # get the word group ids
     print("...subsetting the char matrix...")
-    word_group_id_list = wg_df["word_group_id"].to_numpy()
+    word_group_id_list = wg_df["word_group_id"].to_numpy(dtype = np.int32)
     # and the associated word_id
-    word_id_list = wg_df["word_id"].to_numpy()
+    word_id_list = wg_df["word_id"].to_numpy(dtype = np.int32)
 
     # trim the char matrix by word id and not the word_group id
     wchar_matrix = char_matrix[word_id_list, :]
@@ -177,7 +177,7 @@ def split_matrix(
             if nc not in n_char_matrix_dict:
                 nc_wg_id_list = wg_df.loc[
                     (wg_df["n_chars"] >= nc), "word_group_id"
-                ].to_numpy()
+                ].to_numpy(dtype = np.int32)
                 nc_wg_id_set = set(nc_wg_id_list)
                 n_char_set_dict[nc] = nc_wg_id_set
 
@@ -1249,8 +1249,17 @@ def get_ls_index(df: pd.DataFrame, letter_selector_col_name: str = 'letter_selec
     return df
 
 
-def build_ls_index_arrays(wg_df: pd.DataFrame, ls_df: pd.DataFrame, letter_selector_col_name: str = 'letter_selector_id'):
-    ls_id_wg_id = wg_df[['letter_selector_id', 'word_group_id']].to_numpy()
+def build_ls_index_arrays(wg_df: pd.DataFrame, ls_df: pd.DataFrame,
+                          letter_selector_col_name: str = 'letter_selector_id',
+                          change_data_types:bool = True):
+    
+    # create the list of letter selector id and word group ids
+    if change_data_types:
+        ls_id_wg_id = wg_df[['letter_selector_id', 'word_group_id']].to_numpy(dtype = np.int32)
+    else:
+        ls_id_wg_id = wg_df[['letter_selector_id', 'word_group_id']].to_numpy()
+
+    # create an array of true/false values to be used as a column selector
     ls_index_array = np.array(ls_df['ls_index'].to_list())
     return ls_id_wg_id, ls_index_array
 
