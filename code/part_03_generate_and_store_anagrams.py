@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # process control flags
     ####
 
-    # Use numpy to perform matrix opertions and determine from/to and exact anagram relationships
+    # Use numpy to perform matrix operations and determine from/to and exact anagram relationships
     # Option 1: Full matrix
     # Option 2: Word-length
     # Option 3: First letter
