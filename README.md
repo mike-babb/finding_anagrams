@@ -256,7 +256,7 @@ Using the data generated in the previous experiment, I identified the largest le
 
 * [Exp_07_plot_search_spaces.R](code/Exp_07_plot_search_spaces.R): Not an experiment, just an excuse to work with `R` and the `data.table` package and make a few plots. While I think Python is great and it's incredibly versatile, I love R. I made three plots using `ggplot()`. Each plot showcases a different aspect of the letter selectors as created in [Exp_04_compute_sizes_of_all_search_spaces.ipynb](code/Exp_04_compute_sizes_of_all_search_spaces.ipynb). What's really interesting is that these plots show how the rate of change plateaus after increasing the number of characters in the letter selector to six or so. The additional plots created by this process are:
     * [ls_01_n_letter_selectors.png](/graphics/ls_01_n_letter_selectors.png): Barplot showing the number of letter selectors by number of characters in the letter selector.
-    * [ls_02_n_lookups.png](/graphics/ls_02_n_lookups.png): Number of lookups by number of characters in the letter selector.
-    * [ls_03_letter_selector_size.png](/graphics/ls_03_letter_selector_size.png): Number of elements in the letter selector by number of characters in the letter selector.
+    * [ls_02_n_lookups.png](/graphics/ls_02_n_lookups.png): Boxplot showing the number of lookups by number of characters in the letter selector.
+    * [ls_03_letter_selector_size.png](/graphics/ls_03_letter_selector_size.png): Boxplot showing the number of elements in the letter selector by number of characters in the letter selector.
 
-So, to conclude, set your `NumPy` data types. And maybe a GPU can help. 
+So, to conclude, set your `NumPy` data types.
