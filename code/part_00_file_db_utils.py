@@ -28,7 +28,6 @@ def create_path(data_output_file_path:str) -> None:
     return None
 
 
-
 def calc_time(time_start:perf_counter_ns,                      
               round_digits:int = 2) -> float:
     
@@ -51,6 +50,31 @@ def compute_total_time(total_time_start:perf_counter_ns):
     total_time_minutes = round(total_time_minutes, 2)
 
     print(total_time_seconds, "seconds |",  total_time_minutes, "minutes")
+
+# let's convert to total hours, total minutes, and total seconds
+def get_hms(seconds:float, round_seconds_digits:int = 0, as_string:bool = True):
+    # convert seconds to total hours, minutes, and seconds
+    # for example: 3661 seconds is 1 hour, 1 minute, 1 second
+    # whole hours
+    hours = int(seconds // 3600)
+    # whole minutes
+    minutes = int((seconds - (hours * 3600)) // 60)
+    remaining_seconds = seconds - ((hours * 3600) + (minutes * 60))
+    
+    remaining_seconds = round(remaining_seconds, round_seconds_digits)
+    if round_seconds_digits == 0:
+        remaining_seconds = int(remaining_seconds)
+    
+    if as_string:
+        hours = str(hours)
+        minutes = str(minutes)
+        remaining_seconds = str(remaining_seconds)
+
+    return hours, minutes, remaining_seconds
+    
+def compute_elapsed_time(seconds:float):
+    hours, minutes, seconds = get_hms(seconds=seconds, round_seconds_digits=8, as_string=False)
+    print(f"Hours: {hours} | minutes: {minutes} | seconds: {seconds}")
     
 
 # helper function to save pickled objects
@@ -150,6 +174,8 @@ def write_data_to_sqlite(df:pd.DataFrame, table_name:str, db_path:str, db_name:s
     db_conn.close()
 
     return None
+
+
 
 
 if __name__ == "__main__":

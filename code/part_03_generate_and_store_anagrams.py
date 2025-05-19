@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # process control flags
     ####
 
-    # Use numpy to perform matrix opertions and determine from/to and exact anagram relationships
+    # Use numpy to perform matrix operations and determine from/to and exact anagram relationships
     # Option 1: Full matrix
     # Option 2: Word-length
     # Option 3: First letter
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     n_subset_letters = 3
 
     # set write_data to True to store the generated list of anagrams
-    write_data = True
+    write_data = False
 
     # Testing options
     # None to include all letters
