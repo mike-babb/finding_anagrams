@@ -24,7 +24,7 @@ By replacing the ordinal positions of each letter with the count of each letter 
 ``` python
 [1, 0, 1, 0, 2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]
 ```  
-Doing this for each word enables the rapid comparison of a focal word with *all other words*. This is accomplished by subtracting the focal vector from the `char_matrix`. Calling [`np.min(axis=1)`](https://numpy.org/doc/stable//reference/generated/numpy.min.html) generates a vector of length approximatley $216K$ that contains the smallest value in each row. The resulting vector features a combination of positive, negative, and zero values. Negative values indicate that the focal word has letters not found in other words. A value GTE zero means that the letters in the focal word are found in other words. A boolean operation is then used to select which indices are greater than or equal to $0$. These indices correspond to parent words of the focal word. For example, `archdetective` is a parent word of `achiever`:
+Doing this for each word enables the rapid comparison of a focal word with *all other words*. This is accomplished by subtracting the focal vector from the `char_matrix`. Calling [`np.min(axis=1)`](https://numpy.org/doc/stable//reference/generated/numpy.min.html) generates a vector of length approximately $216K$ that contains the smallest value in each row. The resulting vector features a combination of positive, negative, and zero values. Negative values indicate that the focal word has letters not found in other words. A value GTE zero means that the letters in the focal word are found in other words. A boolean operation is then used to select which indices are greater than or equal to $0$. These indices correspond to parent words of the focal word. For example, `archdetective` is a parent word of `achiever`:
 ``` python
 >>> import numpy as np
 >>> archdetective = np.array([1, 0, 2, 1, 3, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0])
@@ -212,7 +212,7 @@ pip install pyan3==1.1.1
 After this environment has been created, activate the `py38` environment and run the batch file listed above. 
 
 ## Profiling
-[Profiling](https://en.wikipedia.org/wiki/Profiling_(computer_programming)) measures execution time and complexity. This is exceptionally useful when looking at which parts of a program are taking longer than expected or just understanding how long things take. The three batch files below can be executud from the Anaconda Powershell prompt with the same activated environment as the environment used to run parts 01, 02, and 03.
+[Profiling](https://en.wikipedia.org/wiki/Profiling_(computer_programming)) measures execution time and complexity. This is exceptionally useful when looking at which parts of a program are taking longer than expected or just understanding how long things take. The three batch files below can be executed from the Anaconda Powershell prompt with the same activated environment as the environment used to run parts 01, 02, and 03.
 
 * [profile_part_01_structure_data.bat](/code/profile_part_01_structure_data.bat)
 * [profile_part_02_demonstrate_extraction_timing_techniques.bat](/code/profile_part_02_demonstrate_extraction_timing_techniques.bat)
