@@ -15,6 +15,7 @@ from time import perf_counter_ns
 # external libraries
 import numpy as np
 import pandas as pd
+import polars as pl
 
 # custom libraries
 import _run_constants as rc
@@ -1205,62 +1206,91 @@ def build_timing_and_output_objects(output_time_list: list, ls_df: pd.DataFrame)
 
     return time_df
 
+def build_letter_selector_df(
+    df: pl.DataFrame,
+    ls_nchar: int,
+    letter_selector_col_name: str,
+    letter_selector_id_col_name: str,
+    create_letter_selector: bool = True
+) -> pl.DataFrame:
 
-def build_letter_selector_df(df: pd.DataFrame,
-                             ls_nchar: int,
-                             letter_selector_col_name: str,
-                             letter_selector_id_col_name: str,
-                             create_letter_selector: bool = True):
+    
+    # Create the letter selector column if requested
     if create_letter_selector:
-        df[letter_selector_col_name] = df['letter_group_ranked'].str[:ls_nchar]
-
-    if 'n_records' not in df.columns:
-        df['n_records'] = int(1)
-
-    col_names = [letter_selector_col_name, 'n_records']
-    ls_df = df[col_names].groupby(
-        col_names[:-1]).agg(ls_count=('n_records', 'sum')).reset_index()
-    ls_df['ls_nchar_iter'] = ls_nchar
-    ls_df['ls_nchar'] = ls_df[letter_selector_col_name].str.len()
-    ls_df[letter_selector_id_col_name] = range(0, ls_df.shape[0])
-
+        df = df.with_columns(
+            pl.col("letter_group_ranked").str.slice(0, ls_nchar).alias(letter_selector_col_name)
+        )
+    
+    # Add n_records column if missing
+    if "n_records" not in df.columns:
+        df = df.with_columns(pl.lit(1).alias("n_records"))
+    
+    # Group and aggregate
+    ls_df = (
+        df.group_by(pl.col(letter_selector_col_name))
+          .agg(pl.col("n_records").sum().alias("ls_count"))
+    )
+    
+    # Add ls_nchar_iter and ls_nchar
+    ls_df = ls_df.with_columns([
+        pl.lit(ls_nchar).alias("ls_nchar_iter"),
+        pl.col(letter_selector_col_name).str.len_chars().alias("ls_nchar")
+    ])
+    
+    # Add sequential ID column
+    ls_df = ls_df.with_row_index(name=letter_selector_id_col_name)
+    
     return df, ls_df
+
 
 # function to return the index position of each letter
 
-
-def get_ls_index(df: pd.DataFrame, letter_selector_col_name: str = 'letter_selector', data_path: str = rc.DATA_OUTPUT_FILE_PATH):
+def get_ls_index(
+    df: pl.DataFrame,
+    letter_selector_col_name: str = "letter_selector",
+    data_path: str = rc.DATA_OUTPUT_FILE_PATH
+) -> pl.DataFrame:
     # load the letter dictionary from part 1
     print("...loading the letter dictionary...")
     in_file_name = "letter_dict.pkl"
     letter_dict = load_pickle(
-        in_file_path=data_path, in_file_name=in_file_name)
+        in_file_path=data_path, in_file_name=in_file_name
+    )
 
-    # build an array of true-false values. This is more data, but
-    # it is all the same size and shape
+    # build an array of true-false values
     def build_true_false_index(ls: str):
-        outcome_list = np.zeros(shape=(26,), dtype=np.bool)
+        outcome_list = np.zeros(shape=(26,), dtype=bool)
         for curr_ls in ls:
             outcome_list[letter_dict[curr_ls]] = True
         return outcome_list
 
-    df['ls_index'] = df[letter_selector_col_name].map(build_true_false_index)
+    # apply function element-wise using map_elements
+    df = df.with_columns(
+        pl.col(letter_selector_col_name).map_elements(
+            build_true_false_index, return_dtype=pl.Object
+        ).alias("ls_index")
+    )
 
     return df
 
 
-def build_ls_index_arrays(wg_df: pd.DataFrame, ls_df: pd.DataFrame,
-                          letter_selector_col_name: str = 'letter_selector_id',
-                          change_data_types:bool = True):
-    
+
+def build_ls_index_arrays(
+    wg_df: pl.DataFrame,
+    ls_df: pl.DataFrame,
+    letter_selector_col_name: str = "letter_selector_id",
+    change_data_types: bool = True
+):
     # create the list of letter selector id and word group ids
     if change_data_types:
-        ls_id_wg_id = wg_df[['letter_selector_id', 'word_group_id']].to_numpy(dtype = np.int32)
+        ls_id_wg_id = wg_df.select(["letter_selector_id", "word_group_id"]).to_numpy()
+        ls_id_wg_id = ls_id_wg_id.astype(np.int32)
     else:
-        ls_id_wg_id = wg_df[['letter_selector_id', 'word_group_id']].to_numpy()
+        ls_id_wg_id = wg_df.select(["letter_selector_id", "word_group_id"]).to_numpy()
 
     # create an array of true/false values to be used as a column selector
-    ls_index_array = np.array(ls_df['ls_index'].to_list())
+    ls_index_array = np.array(ls_df.select("ls_index").to_series().to_list())
+
     return ls_id_wg_id, ls_index_array
 
 
